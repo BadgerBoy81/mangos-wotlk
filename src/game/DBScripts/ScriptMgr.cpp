@@ -1650,7 +1650,7 @@ bool ScriptAction::ExecuteDbscriptCommand(WorldObject* pSource, WorldObject* pTa
 
             // quest id and flags checked at script loading
             if (!failQuest)
-                pPlayer->AreaExploredOrEventHappens(m_script->questExplored.questId);
+                pPlayer->RewardPlayerAndGroupAtEventExplored(m_script->questExplored.questId, pWorldObject);
             else
                 pPlayer->FailQuest(m_script->questExplored.questId);
 
