@@ -1012,7 +1012,7 @@ bool Loot::FillLoot(uint32 loot_id, LootStore const& store, Player* lootOwner, b
                 case MASTER_LOOT:
                 {
                     // roll item if masterloot is not in the list or if masterloot have no right for this item
-                    if (!masterLooter || lootItem->allowedGuid.find(m_masterOwnerGuid) == lootItem->allowedGuid.end())
+                    if (!masterLooter || (lootItem->allowedGuid.find(m_masterOwnerGuid) == lootItem->allowedGuid.end() && !m_isChest))
                         lootItem->isBlocked = true;
                     break;
                 }
