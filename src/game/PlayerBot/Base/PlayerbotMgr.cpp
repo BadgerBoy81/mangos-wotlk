@@ -824,7 +824,7 @@ void PlayerbotMgr::HandleMasterOutgoingPacket(const WorldPacket& packet)
                             }
                         }
                         if (spellMount > 0 && bot->CastSpell(bot, spellMount, TRIGGERED_NONE) == SPELL_CAST_OK)
-                            return;
+                            continue;
 
                         // Step 2: no spell found or cast failed -> search for an item in inventory (mount)
                         // We start with the fastest mounts as bot will not be able to outrun its master since it is following him/her
@@ -835,7 +835,7 @@ void PlayerbotMgr::HandleMasterOutgoingPacket(const WorldPacket& packet)
                             if (mount)
                             {
                                 bot->GetPlayerbotAI()->UseItem(mount);
-                                return;
+                                break;
                             }
                         }
                     }
