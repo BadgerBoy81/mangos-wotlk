@@ -1967,6 +1967,7 @@ class PlayerbotAI
         void SetGroupIgnoreUpdateTime(uint8 t);
         bool GroupHoTOnTank();
         bool CanPull(Player& fromPlayer);
+        bool CanLootInDungeon() { return m_loot_in_dungeon; }
         bool CastPull();
         bool GroupTankHoldsAggro();
         bool CastNeutralize();
@@ -2057,6 +2058,7 @@ class PlayerbotAI
         void _HandleCommandHelp(std::string& text, Player& fromPlayer);
         void _HandleCommandHelp(const char* szText, Player& fromPlayer) { std::string text = szText; _HandleCommandHelp(text, fromPlayer); }
         void _HandleCommandGM(std::string& text, Player& fromPlayer);
+        void _HandleCommandDungeonLoot(std::string& text, Player& fromPlayer);
         std::string _HandleCommandHelpHelper(std::string sCommand, std::string sExplain, HELPERLINKABLES reqLink = HL_NONE, bool bReqLinkMultiples = false, bool bCommandShort = false);
 
         // ****** Closed Actions ********************************
@@ -2116,6 +2118,7 @@ class PlayerbotAI
         bool m_inventory_full;
         uint32 m_itemTarget;
         bool m_dropWhite;
+        bool m_loot_in_dungeon;
 
         uint32 m_CurrentlyCastingSpellId;
         uint32 m_CraftSpellId;
