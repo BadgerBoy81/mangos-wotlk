@@ -138,6 +138,7 @@ PlayerbotAI::PlayerbotAI(PlayerbotMgr &mgr, Player* const bot, bool debugWhisper
     SetMovementOrder(MOVEMENT_FOLLOW, GetMaster());
     BotDataRestore();
     m_DelayAttackInit = CurrentTime();
+    m_loot_in_dungeon = true;
 
     // get class specific ai
     ReloadAI();
@@ -3763,6 +3764,10 @@ void PlayerbotAI::SetQuestNeedItems()
 void PlayerbotAI::SetState(BotState state)
 {
     // DEBUG_LOG ("[PlayerbotAI]: SetState - %s switch state %d to %d", m_bot->GetName(), m_botState, state );
+
+    if (state == BOTSTATE_LOOTING && m_bot->GetMap()->IsDungeon() && !CanLootInDungeon())
+            return;
+
     m_botState = state;
 }
 
@@ -9226,6 +9231,8 @@ void PlayerbotAI::HandleCommand(const std::string& text, Player& fromPlayer)
     // stats project: 11:30 15/12/10 rev.2 display bot statistics
     else if (ExtractCommand("stats", input))
         _HandleCommandStats(input, fromPlayer);
+    else if (ExtractCommand("dungeonloot", input))
+        _HandleCommandDungeonLoot(input, fromPlayer);
 
     else
     {
@@ -11915,6 +11922,26 @@ void PlayerbotAI::_HandleCommandStats(std::string& text, Player& fromPlayer)
     uint32 copper = m_bot->GetMoney();
     out << "|h|cffffffff item damage & has " << "|r|cff00ff00";
     out << Cash(copper);
+    ChatHandler ch(&fromPlayer);
+    ch.SendSysMessage(out.str().c_str());
+}
+void PlayerbotAI::_HandleCommandDungeonLoot(std::string& text, Player& fromPlayer)
+{
+    if (!text.empty() && text.compare("on") != 0 && text.compare("off") != 0)
+    {
+        SendWhisper("'dungeonloot' only have 'on' or 'off' as subcommands", fromPlayer);
+        return;
+    }
+
+    if (text.empty())
+        m_loot_in_dungeon = !m_loot_in_dungeon;
+    else if(text.compare("on") == 0)
+        m_loot_in_dungeon = true;
+    else
+        m_loot_in_dungeon = false;
+
+    std::ostringstream out;
+    out << "Dungeonloot is now " << m_loot_in_dungeon << " for " << m_bot->GetName();
     ChatHandler ch(&fromPlayer);
     ch.SendSysMessage(out.str().c_str());
 }
