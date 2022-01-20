@@ -1485,6 +1485,18 @@ void GameObject::Use(Unit* user, SpellEntry const* spellInfo)
             {
                 player->PrepareGossipMenu(this, GetGOInfo()->questgiver.gossipID);
                 player->SendPreparedGossip(this);
+#ifdef BUILD_PLAYERBOT
+                uint32 objId = GetGOInfo()->id;
+                // only do this for gnomer punchcardreaders so far. This is for setting bots to have interacted with reader so they can pick an option later
+                if ((player->GetPlayerbotMgr()) && (objId == 142345 || objId == 142475 || objId == 142476 || objId == 142696))
+                {
+                    for (PlayerBotMap::const_iterator itr = player->GetPlayerbotMgr()->GetPlayerBotsBegin(); itr != player->GetPlayerbotMgr()->GetPlayerBotsEnd(); ++itr)
+                    {
+                        Player* bot = itr->second;
+                        bot->PrepareGossipMenu(this, GetGOInfo()->questgiver.gossipID);
+                    }
+                }
+#endif
             }
 
             return;

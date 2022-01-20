@@ -404,6 +404,29 @@ void PlayerbotMgr::HandleMasterIncomingPacket(const WorldPacket& packet)
         }
         break;
 
+        case CMSG_GOSSIP_SELECT_OPTION:
+        {
+            WorldPacket p(packet);
+            p.rpos(0);    // reset reader
+            ObjectGuid guid;
+
+            p >> guid;
+            uint32 objId = guid.GetEntry();
+
+            // Only do this for gnomer punchcard readers so far
+            if (objId == 142345 || objId == 142475 || objId == 142476 || objId == 142696)
+            {
+                for (PlayerBotMap::const_iterator it = GetPlayerBotsBegin(); it != GetPlayerBotsEnd(); ++it)
+                {
+                    Player* const bot = it->second;
+                    p.rpos(0);    // reset reader
+                    const char* botName = bot->GetName();
+                    bot->GetSession()->HandleGossipSelectOptionOpcode(p);
+                }
+            }
+            break;
+        }
+
         case CMSG_QUESTGIVER_HELLO:
         {
             WorldPacket p(packet);
