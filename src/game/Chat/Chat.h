@@ -216,6 +216,10 @@ class ChatHandler
         bool HandleAHBotItemCommand(char* args);
 #endif
 
+#ifdef BUILD_DEPRECATED_PLAYERBOT
+        bool HandleListAccountPlayersCommand(char* args);
+#endif
+
         bool HandleAuctionAllianceCommand(char* args);
         bool HandleAuctionGoblinCommand(char* args);
         bool HandleAuctionHordeCommand(char* args);
@@ -869,6 +873,9 @@ class ChatHandler
         void ShowItemListHelper(uint32 itemId, int loc_idx, Player* target = nullptr);
         void ShowQuestListHelper(uint32 questId, int32 loc_idx, Player* target = nullptr);
         bool ShowPlayerListHelper(std::unique_ptr<QueryResult> queryResult, uint32* limit = nullptr, bool title = true, bool error = true);
+#ifdef BUILD_DEPRECATED_PLAYERBOT
+        bool ShowPlayerbotListHelper(std::unique_ptr<QueryResult> queryResult);
+#endif
         void ShowSpellListHelper(Player* target, SpellEntry const* spellInfo, LocaleConstant loc);
         void ShowPoolListHelper(uint16 pool_id);
         void ShowTriggerListHelper(AreaTriggerEntry const* atEntry);
