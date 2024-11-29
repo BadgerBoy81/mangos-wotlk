@@ -6894,6 +6894,40 @@ bool ChatHandler::ShowPlayerListHelper(std::unique_ptr<QueryResult> queryResult,
     return true;
 }
 
+#ifdef BUILD_DEPRECATED_PLAYERBOT
+bool ChatHandler::ShowPlayerbotListHelper(std::unique_ptr<QueryResult> queryResult)
+{
+    if (!queryResult)
+    {
+        return false;
+    }
+    Group* group = m_session->GetPlayer()->GetGroup();
+    bool isRaid = group ? group->IsRaidGroup() : 0;
+    ///- Circle through them. Display username and GM level
+    char availableBots[300] = "";
+    sprintf(availableBots, "pbhbotlist;%d;%d", group != nullptr, isRaid);
+    int numCharsUsed = 14;
+    do
+    {
+        Field* fields = queryResult->Fetch();
+        uint32 guid = fields[0].GetUInt32();
+        std::string name = fields[1].GetCppString();
+        uint8 race = fields[2].GetUInt8();
+        uint8 class_ = fields[3].GetUInt8();
+        uint32 level = fields[4].GetUInt32();
+        bool online = fields[5].GetBool();
+        uint32 memberGuid = group ? group->GetMemberGuid(name).GetRawValue() : 0;
+        ChrRacesEntry const* raceEntry = sChrRacesStore.LookupEntry(race);
+        ChrClassesEntry const* classEntry = sChrClassesStore.LookupEntry(class_);
+        char const* race_name = raceEntry ? raceEntry->name[GetSessionDbcLocale()] : "<?>";
+        char const* class_name = classEntry ? classEntry->name[GetSessionDbcLocale()] : "<?>";
+        numCharsUsed += sprintf(availableBots + numCharsUsed, ";%d:%s:%s:%s:%d:%d:%d", guid, name.c_str(), race_name, class_name, level, online, memberGuid == guid);
+    } while (queryResult->NextRow());
+    m_session->GetPlayer()->Say(availableBots, LANG_ADDON);
+    return true;
+}
+#endif
+
 /// Output list of character for account
 bool ChatHandler::HandleAccountCharactersCommand(char* args)
 {
@@ -6909,6 +6943,21 @@ bool ChatHandler::HandleAccountCharactersCommand(char* args)
 
     return ShowPlayerListHelper(std::move(queryResult));
 }
+
+#ifdef BUILD_DEPRECATED_PLAYERBOT
+bool ChatHandler::HandleListAccountPlayersCommand(char* args)
+{
+    if (!m_session)
+        return false;
+    auto active_player = m_session->GetPlayer()->GetName();
+
+    ///- Get the characters for account that active_player belongs to, except active_player
+    auto otherCharactersOnAccountQuery = "SELECT guid, name, race, class, level, online FROM characters WHERE account = "
+        "(SELECT account FROM characters WHERE name = '%s') AND name <> '%s'";
+    auto queryResult = CharacterDatabase.PQuery(otherCharactersOnAccountQuery, active_player, active_player);
+    return ShowPlayerbotListHelper(std::move(queryResult));
+}
+#endif // BUILD_DEPRECATED_PLAYERBOTS
 
 /// Set/Unset the expansion level for an account
 bool ChatHandler::HandleAccountSetAddonCommand(char* args)

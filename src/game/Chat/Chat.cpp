@@ -560,6 +560,14 @@ ChatCommand* ChatHandler::getCommandTable()
 //         { nullptr,          0,                  false, nullptr,                                        "", nullptr }
 //     };
 
+#ifdef BUILD_DEPRECATED_PLAYERBOT 
+    static ChatCommand playerbotHandlerCommandTable[] =
+    {
+        { "list",          SEC_PLAYER,         false,  &ChatHandler::HandleListAccountPlayersCommand,   "", nullptr },
+        { nullptr,         0,                  false,  nullptr,                                         "", nullptr }
+    };
+#endif
+
     static ChatCommand npcGroupCommandTable[] =
     {
         { "info",           SEC_GAMEMASTER,     false, &ChatHandler::HandleNpcGroupInfoCommand,        "", nullptr },
@@ -1100,6 +1108,7 @@ ChatCommand* ChatHandler::getCommandTable()
         { "loot",           SEC_GAMEMASTER,     true,  nullptr,                                        "", lootCommandTable },
 #ifdef BUILD_DEPRECATED_PLAYERBOT
         { "bot",            SEC_PLAYER,         false, &ChatHandler::HandlePlayerbotCommand,           "", nullptr },
+        { "pbh\tpbh",       SEC_PLAYER,         false, nullptr,                                        "", playerbotHandlerCommandTable },
 #endif
 
         { nullptr,             0,                  false, nullptr,                                           "", nullptr }
@@ -1352,6 +1361,8 @@ ChatCommand const* ChatHandler::FindCommand(char const* text)
 {
     ChatCommand* command = nullptr;
     char const* textPtr = text;
+
+	sLog.outString("Chat.cpp: 1364, text: %s", text);
 
     return FindCommand(getCommandTable(), textPtr, command) == CHAT_COMMAND_OK ? command : nullptr;
 }

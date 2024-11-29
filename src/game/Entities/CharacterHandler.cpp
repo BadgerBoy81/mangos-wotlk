@@ -290,6 +290,9 @@ class CharacterHandler
             botSession->SetNoAnticheat();
             botSession->HandlePlayerLogin(lqh); // will delete lqh
             masterSession->GetPlayer()->GetPlayerbotMgr()->OnBotLogin(botSession->GetPlayer());
+            char addonMessage[18] = "";
+            sprintf(addonMessage, "pbhbotstatus;1;%d", botSession->GetPlayer()->GetDbGuid());
+            botSession->GetPlayer()->Say(addonMessage, LANG_ADDON);
         }
 #endif
 } chrHandler;
