@@ -1951,7 +1951,17 @@ bool ScriptAction::ExecuteDbscriptCommand(WorldObject* pSource, WorldObject* pTa
 
             // quest id and flags checked at script loading
             if (!failQuest)
+            {
                 pPlayer->AreaExploredOrEventHappens(m_script->questExplored.questId);
+#ifdef BUILD_DEPRECATED_PLAYERBOT
+                for (PlayerBotMap::const_iterator itr = pPlayer->GetPlayerbotMgr()->GetPlayerBotsBegin();
+                    itr != pPlayer->GetPlayerbotMgr()->GetPlayerBotsEnd(); ++itr)
+                {
+                    Player* const botPlayer = itr->second;
+                    botPlayer->AreaExploredOrEventHappens(m_script->questExplored.questId);
+                }
+#endif
+            }
             else
                 pPlayer->FailQuest(m_script->questExplored.questId);
 
