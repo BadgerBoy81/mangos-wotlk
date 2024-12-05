@@ -783,6 +783,7 @@ void PlayerbotMgr::HandleMasterOutgoingPacket(const WorldPacket& packet)
                         // Bot Part
                         // Step 1: find spell in bot spellbook that matches the speed change from master
                         uint32 spellMount = 0;
+                        bool mounted = false;
                         for (auto & itr : bot->GetSpellMap())
                         {
                             uint32 spellId = itr.first;
@@ -799,7 +800,6 @@ void PlayerbotMgr::HandleMasterOutgoingPacket(const WorldPacket& packet)
                                     if (pSpellInfo->EffectBasePoints[1] == master_speed1)
                                     {
                                         spellMount = spellId;
-                                        break;
                                     }
                                 }
                                 else if ((pSpellInfo->EffectApplyAuraName[1] == SPELL_AURA_MOD_INCREASE_MOUNTED_SPEED)
@@ -809,7 +809,6 @@ void PlayerbotMgr::HandleMasterOutgoingPacket(const WorldPacket& packet)
                                         && (pSpellInfo->EffectBasePoints[2] == master_speed2))
                                     {
                                         spellMount = spellId;
-                                        break;
                                     }
                                 }
                                 else if ((pSpellInfo->EffectApplyAuraName[2] == SPELL_AURA_MOD_INCREASE_MOUNTED_SPEED)
@@ -818,23 +817,28 @@ void PlayerbotMgr::HandleMasterOutgoingPacket(const WorldPacket& packet)
                                         && (pSpellInfo->EffectBasePoints[1] == master_speed1))
                                     {
                                         spellMount = spellId;
-                                        break;
                                     }
+                                if (spellMount > 0 && bot->CastSpell(bot, spellMount, TRIGGERED_NONE) == SPELL_CAST_OK)
+                                {
+                                    mounted = true;
+                                    break;
+                                }
                             }
                         }
-                        if (spellMount > 0 && bot->CastSpell(bot, spellMount, TRIGGERED_NONE) == SPELL_CAST_OK)
-                            return;
 
                         // Step 2: no spell found or cast failed -> search for an item in inventory (mount)
                         // We start with the fastest mounts as bot will not be able to outrun its master since it is following him/her
-                        uint32 skillLevels[] = { 375, 300, 225, 150, 75 };
-                        for (uint32 level : skillLevels)
+                        if (!mounted)
                         {
-                            Item* mount = bot->GetPlayerbotAI()->FindMount(level);
-                            if (mount)
+                            uint32 skillLevels[] = { 375, 300, 225, 150, 75 };
+                            for (uint32 level : skillLevels)
                             {
-                                bot->GetPlayerbotAI()->UseItem(mount);
-                                return;
+                                Item* mount = bot->GetPlayerbotAI()->FindMount(level);
+                                if (mount)
+                                {
+                                    bot->GetPlayerbotAI()->UseItem(mount);
+                                    continue;
+                                }
                             }
                         }
                     }
