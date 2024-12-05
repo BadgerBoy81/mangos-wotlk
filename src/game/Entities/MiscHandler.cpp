@@ -349,7 +349,17 @@ void WorldSession::HandleTogglePvP(WorldPacket& recv_data)
     }
 
     if (GetPlayer()->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_PVP_DESIRED))
+    {
         GetPlayer()->UpdatePvP(true);
+#ifdef BUILD_DEPRECATED_PLAYERBOT
+        for (PlayerBotMap::const_iterator itr = GetPlayer()->GetPlayerbotMgr()->GetPlayerBotsBegin();
+            itr != GetPlayer()->GetPlayerbotMgr()->GetPlayerBotsEnd(); ++itr)
+        {
+            Player* const botPlayer = itr->second;
+			botPlayer->UpdatePvP(true);
+        }
+#endif
+    }
 }
 
 void WorldSession::HandleZoneUpdateOpcode(WorldPacket& recv_data)
