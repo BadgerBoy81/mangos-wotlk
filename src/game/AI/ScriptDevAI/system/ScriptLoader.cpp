@@ -456,7 +456,8 @@ extern void AddSC_instance_underbog();
 extern void AddSC_boss_gruul();                             // gruuls_lair
 extern void AddSC_boss_high_king_maulgar();
 extern void AddSC_instance_gruuls_lair();
-extern void AddSC_boss_broggok();                           // HC, blood_furnace
+extern void AddSC_boss_the_maker();                         // HC, blood_furnace
+extern void AddSC_boss_broggok();                           
 extern void AddSC_boss_kelidan_the_breaker();
 extern void AddSC_instance_blood_furnace();
 extern void AddSC_boss_nazan_and_vazruden();                // HC, hellfire_ramparts
@@ -959,6 +960,7 @@ void AddScripts()
     AddSC_boss_gruul();                                     // gruuls_lair
     AddSC_boss_high_king_maulgar();
     AddSC_instance_gruuls_lair();
+    AddSC_boss_the_maker();                                   // HC, blood_furnace
     AddSC_boss_broggok();                                   // HC, blood_furnace
     AddSC_boss_kelidan_the_breaker();
     AddSC_instance_blood_furnace();
