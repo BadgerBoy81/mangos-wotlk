@@ -131,6 +131,9 @@ void AuctionHouseBot::Initialize()
         // buy item value
         m_buyValue = GetMinMaxConfig("AuctionHouseBot.Buy.Value", 0, 200, 90);
 
+        // bot character
+        m_auctionOwnerGuid = m_ahBotCfg.GetIntDefault("AuctionHouseBot.General.AuctionOwner", m_defaultAuctionOwnerGuid);
+
         // overridden items
         auto queryResult = CharacterDatabase.PQuery("SELECT item, value, add_chance, min_amount, max_amount FROM ahbot_items");
         if (queryResult)
@@ -240,7 +243,7 @@ void AuctionHouseBot::Update()
         for (AuctionHouseObject::AuctionEntryMap::const_iterator itr = bounds.first; itr != bounds.second; ++itr)
         {
             AuctionEntry* auction = itr->second;
-            if (auction->owner == 0 && auction->bid == 0)
+            if (auction->owner == m_auctionOwnerGuid && auction->bid == 0)
                 continue; // ignore bidding/buying auctions that were created by ahbot and not bidded on by player
             Item* item = sAuctionMgr.GetAItem(auction->itemGuidLow);
             if (!item)

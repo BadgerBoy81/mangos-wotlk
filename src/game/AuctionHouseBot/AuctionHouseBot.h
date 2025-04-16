@@ -59,6 +59,9 @@ class AuctionHouseBot
         void SetItemData(uint32 item, AuctionHouseBotItemData& itemData, bool reset = false);
         AuctionHouseBotItemData GetItemData(uint32 item);
 
+        // used for getting auctionbot config values that's needed outside of bot code
+        uint32 GetAuctionOwner() { return m_auctionOwnerGuid; }
+
     private:
         uint32 GetMinMaxConfig(const char* config, uint32 minValue, uint32 maxValue, uint32 defaultValue);
         void ParseLootConfig(char const* fieldname, std::vector<int32>& lootConfig);
@@ -95,6 +98,9 @@ class AuctionHouseBot
         uint32 m_auctionTimeMin;
         uint32 m_auctionTimeMax;
         uint32 m_buyValue;
+
+        uint32 m_auctionOwnerGuid;
+        uint32 m_defaultAuctionOwnerGuid = 0;
 
         std::vector<uint32> m_creatureLootNormalTemplates;
         std::vector<uint32> m_creatureLootRareTemplates;

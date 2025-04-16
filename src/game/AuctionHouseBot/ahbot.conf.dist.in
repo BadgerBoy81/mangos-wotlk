@@ -156,3 +156,10 @@ AuctionHouseBot.Time.Max = 24
 # Value must be in range 0-200. Default value is 80.
 ###################################################################################################################
 AuctionHouseBot.Buy.Value = 80
+
+###################################################################################################################
+# AHBot general settings
+#
+# This determines the owner of auctions put up by the bot
+###################################################################################################################
+AuctionHouseBot.General.AuctionOwner = 11
