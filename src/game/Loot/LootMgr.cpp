@@ -28,6 +28,7 @@
 #include "Server/SQLStorages.h"
 #include "Entities/ItemEnchantmentMgr.h"
 #include "Tools/Language.h"
+#include "Entities/Player.h"
 #include "BattleGround/BattleGroundMgr.h"
 #include <sstream>
 #include <iomanip>
@@ -465,6 +466,14 @@ bool LootItem::AllowedForPlayer(Player const* player, WorldObject const* lootTar
 {
     if (!itemProto)
         return false;
+
+#ifdef BUILD_DEPRECATED_PLAYERBOT
+    if (itemProto->MaxCount > 0 && player->IsBot() && player->HasItemCount(itemProto->ItemId, itemProto->MaxCount, true))
+    {
+        // sLog.outString("%s is bot: %s and has max of %s", player->GetName(), player->IsBot() ? "true" : "false", itemProto->Name1);
+        return false;
+    }
+#endif
 
     // not show loot for not own team
     if ((itemProto->Flags2 & ITEM_FLAG2_FACTION_HORDE) && player->GetTeam() != HORDE)
@@ -1566,6 +1575,9 @@ void Loot::ShowContentTo(Player* plr)
         if (!m_lootItems.empty() && !CanLoot(plr))
         {
             SendReleaseFor(plr);
+#ifdef BUILD_DEPRECATED_PLAYERBOT
+            if (!plr->IsBot())
+#endif
             sLog.outError("Loot::ShowContentTo()> %s is trying to open a loot without credential", plr->GetGuidStr().c_str());
             return;
         }
