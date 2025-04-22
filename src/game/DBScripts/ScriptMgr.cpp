@@ -1954,11 +1954,14 @@ bool ScriptAction::ExecuteDbscriptCommand(WorldObject* pSource, WorldObject* pTa
             {
                 pPlayer->AreaExploredOrEventHappens(m_script->questExplored.questId);
 #ifdef BUILD_DEPRECATED_PLAYERBOT
-                for (PlayerBotMap::const_iterator itr = pPlayer->GetPlayerbotMgr()->GetPlayerBotsBegin();
-                    itr != pPlayer->GetPlayerbotMgr()->GetPlayerBotsEnd(); ++itr)
+                if (pPlayer->GetPlayerbotMgr() != nullptr)
                 {
-                    Player* const botPlayer = itr->second;
-                    botPlayer->AreaExploredOrEventHappens(m_script->questExplored.questId);
+                    for (PlayerBotMap::const_iterator itr = pPlayer->GetPlayerbotMgr()->GetPlayerBotsBegin();
+                        itr != pPlayer->GetPlayerbotMgr()->GetPlayerBotsEnd(); ++itr)
+                    {
+                        Player* const botPlayer = itr->second;
+                        botPlayer->AreaExploredOrEventHappens(m_script->questExplored.questId);
+                    }
                 }
 #endif
             }
