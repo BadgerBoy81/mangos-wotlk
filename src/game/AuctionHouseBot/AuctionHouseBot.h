@@ -61,6 +61,7 @@ class AuctionHouseBot
 
         // used for getting auctionbot config values that's needed outside of bot code
         uint32 GetAuctionOwner() { return m_auctionOwnerGuid; }
+        uint32 CalculateBuyoutPrice(ItemPrototype const* prototype);
 
     private:
         uint32 GetMinMaxConfig(const char* config, uint32 minValue, uint32 maxValue, uint32 defaultValue);
@@ -71,7 +72,6 @@ class AuctionHouseBot
         void CalculateItemLevelCap();
         void ParseItemValueConfig(char const* fieldname, std::vector<uint32>& itemValues);
         void AddLootToItemMap(LootStore* store, std::vector<int32>& lootConfig, std::vector<uint32>& lootTemplates, std::unordered_map<uint32, uint32>& itemMap);
-        uint32 CalculateBuyoutPrice(ItemPrototype const* prototype);
         uint32 ValueWithVariance(uint32 itemValue) { return (uint32) (itemValue + ((int32) urand(0, m_valueVariance * 2 + 1) - (int32) m_valueVariance) * (int32) (itemValue / 100)); };
 
         std::string m_configFileName;

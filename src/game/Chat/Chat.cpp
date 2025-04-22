@@ -116,6 +116,7 @@ ChatCommand* ChatHandler::getCommandTable()
         { "reload",         SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleAHBotReloadCommand,         "", nullptr },
         { "status",         SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleAHBotStatusCommand,         "", nullptr },
         { "item",           SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleAHBotItemCommand,           "", nullptr },
+        { "prices",         SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleAHBotGetItemPricesCommand,  "", nullptr },
         { nullptr,          0,                  true,  nullptr,                                        "", nullptr }
     };
 #endif

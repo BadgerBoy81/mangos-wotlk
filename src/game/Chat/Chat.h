@@ -214,6 +214,7 @@ class ChatHandler
         bool HandleAHBotReloadCommand(char* args);
         bool HandleAHBotStatusCommand(char* args);
         bool HandleAHBotItemCommand(char* args);
+        bool HandleAHBotGetItemPricesCommand(char* args);
 #endif
 
 #ifdef BUILD_DEPRECATED_PLAYERBOT

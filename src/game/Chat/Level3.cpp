@@ -180,6 +180,51 @@ bool ChatHandler::HandleAHBotItemCommand(char* args)
     PSendSysMessage(LANG_ITEM_LIST_CHAT, itemId, itemId, proto->Name1, ss.str().c_str());
     return true;
 }
+
+bool ChatHandler::HandleAHBotGetItemPricesCommand(char* args)
+{  
+    if (!args)  
+        return false;  
+
+    // Convert args to an integer  
+    int itemId = atoi(args);  
+
+    // Validate the conversion  
+    if (itemId <= 0)  
+    {  
+        PSendSysMessage(LANG_COMMAND_COULDNOTFIND, args);  
+        return false;  
+    }  
+
+    ItemPrototype const* proto = ObjectMgr::GetItemPrototype(itemId);  
+    if (!proto)  
+    {  
+        PSendSysMessage(LANG_COMMAND_COULDNOTFIND, args);  
+        return false;  
+    }  
+
+	uint32 ahPrice = sAuctionHouseBot.CalculateBuyoutPrice(proto);
+	uint32 sellPrice = proto->SellPrice;
+	uint32 buyPrice = proto->BuyPrice;
+
+    // Calculate the length of the numbers as strings
+    size_t ahPriceLength = std::to_string(ahPrice).length();
+    size_t sellPriceLength = std::to_string(sellPrice).length();
+    size_t buyPriceLength = std::to_string(buyPrice).length();
+    size_t itemIdLength = std::to_string(itemId).length();
+
+    // Allocate the char array dynamically
+    size_t totalLength = 17 + itemIdLength + ahPriceLength + sellPriceLength + buyPriceLength;
+    char* ahPrices = new char[totalLength];
+
+    // Format the string
+    sprintf(ahPrices, "ahprices:%d:%d:%d:%d", itemId, ahPrice, sellPrice, buyPrice);
+    m_session->GetPlayer()->Say(ahPrices, LANG_ADDON);
+
+    delete[] ahPrices; // Free the allocated memory
+
+    return true;
+}
 #endif
 
 // reload commands
