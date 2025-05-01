@@ -93,6 +93,8 @@ PlayerbotWarlockAI::PlayerbotWarlockAI(Player& master, Player& bot, PlayerbotAI&
     m_lastDemon           = 0;
     m_demonOfChoice       = DEMON_IMP;
     m_isTempImp           = false;
+    m_maxSoulShards       = master.GetPlayerbotMgr()->m_warlockMaxSoulShards;
+    m_minBagspaceForCreatingShards = master.GetPlayerbotMgr()->m_warlockMinBagspaceForCreatingShards;
 }
 
 PlayerbotWarlockAI::~PlayerbotWarlockAI() {}
@@ -227,7 +229,7 @@ CombatManeuverReturns PlayerbotWarlockAI::DoNextCombatManeuverPVE(Unit* pTarget)
     // Create soul shard
     uint8 freeSpace = m_ai.GetFreeBagSpace();
     if (DRAIN_SOUL && pTarget->GetHealth() < pTarget->GetMaxHealth() * 0.20 && m_ai.In_Reach(pTarget, DRAIN_SOUL) &&
-            !pTarget->HasAura(DRAIN_SOUL) && (shardCount < MAX_SHARD_COUNT && freeSpace > 0) && CastSpell(DRAIN_SOUL, pTarget))
+            !pTarget->HasAura(DRAIN_SOUL) && (shardCount < m_maxSoulShards && freeSpace > m_minBagspaceForCreatingShards) && CastSpell(DRAIN_SOUL, pTarget))
     {
         m_ai.SetIgnoreUpdateTime(15);
         return RETURN_CONTINUE;
@@ -415,8 +417,8 @@ void PlayerbotWarlockAI::DoNonCombatActions()
     // Destroy extra soul shards
     uint8 shardCount = m_bot.GetItemCount(SOUL_SHARD, false, nullptr);
     uint8 freeSpace = m_ai.GetFreeBagSpace();
-    if (shardCount > MAX_SHARD_COUNT || (freeSpace == 0 && shardCount > 1))
-        m_bot.DestroyItemCount(SOUL_SHARD, shardCount > MAX_SHARD_COUNT ? shardCount - MAX_SHARD_COUNT : 1, true, false);
+    if (shardCount > m_maxSoulShards || (freeSpace < m_minBagspaceForCreatingShards && shardCount > 1))
+        m_bot.DestroyItemCount(SOUL_SHARD, shardCount > m_maxSoulShards ? shardCount - m_maxSoulShards : 1, true, false);
 
     // buff myself DEMON_SKIN, DEMON_ARMOR, FEL_ARMOR - Strongest one available is chosen
     if (FEL_ARMOR)

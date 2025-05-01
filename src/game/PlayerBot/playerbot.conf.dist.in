@@ -94,3 +94,21 @@ PlayerbotAI.Collect.DistanceMax = 50
 PlayerbotAI.Collect.Distance = 25
 PlayerbotAI.SellGarbage = 0
 PlayerbotAI.SellAll.LevelDiff = 10
+
+####################################################################
+#                                
+#    Class specific settings     
+#
+#    PlayerbotAI.Warlock.MaxShards
+#         Sets the max amount of shards a warlock will collect
+#         If warlock has more than this amount they will be destroyed
+#         Default is 15
+#    PlayerbotAI.Warlock.MinBagspaceForCreatingShards
+#         Sets the amount of free space required to allow bot
+#         o create sould shards. Default is 15
+#                                
+####################################################################
+
+PlayerbotAI.Warlock.MaxShards = 2
+PlayerbotAI.Warlock.MinBagspaceForCreatingShards = 15
+

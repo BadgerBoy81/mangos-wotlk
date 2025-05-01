@@ -29,7 +29,6 @@
 #define FIRESTONE 13699
 #define GREATER_FIRESTONE 13700
 #define MAJOR_FIRESTONE 13701
-#define MAX_SHARD_COUNT 10 // Maximum soul shard count bot should keep
 
 enum
 {
@@ -274,6 +273,8 @@ class PlayerbotWarlockAI : PlayerbotClassAI
         uint32 m_lastDemon;      // Last demon entry used for spell initialization
         uint32 m_demonOfChoice;  // Preferred demon entry
         bool m_isTempImp;        // True if imp summoned temporarily until soul shard acquired for demon of choice.
+        uint32 m_maxSoulShards;
+        uint32 m_minBagspaceForCreatingShards;
 };
 
 #endif
