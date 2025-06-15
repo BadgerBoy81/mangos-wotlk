@@ -608,7 +608,7 @@ LootSlotType LootItem::GetSlotTypeForSharedLoot(Player const* player, Loot const
 
 bool LootItem::IsAllowed(Player const* player, Loot const* loot) const
 {
-    if (!loot->m_isChest)
+    if (!loot->m_isChest || loot->m_lootMethod == MASTER_LOOT)
         return allowedGuid.find(player->GetObjectGuid()) != allowedGuid.end();
 
     if (allowedGuid.empty() || (freeForAll && allowedGuid.find(player->GetObjectGuid()) == allowedGuid.end()))
@@ -1064,14 +1064,11 @@ bool Loot::FillLoot(uint32 loot_id, LootStore const& store, Player* lootOwner, b
         {
             if (player && (lootItem->AllowedForPlayer(player, GetLootTarget(), masterLooter)))
             {
-                if (!m_isChest)
+                if (!m_isChest || m_lootMethod == MASTER_LOOT)
                     lootItem->allowedGuid.emplace(player->GetObjectGuid());
             }
-            else
-            {
-                if (playerGuid == m_currentLooterGuid)
-                    lootItem->currentLooterPass = true;         // Some item may not be allowed for current looter, must set this flag to avoid item not distributed to other player
-            }
+            else  if (playerGuid == m_currentLooterGuid)
+                lootItem->currentLooterPass = true;         // Some item may not be allowed for current looter, must set this flag to avoid item not distributed to other player
         }
     }
 
