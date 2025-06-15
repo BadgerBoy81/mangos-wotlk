@@ -269,7 +269,7 @@ class LootTemplate
                 bool HasQuestDropForPlayer(Player const* player) const;
                 // The same for active quests of the player
                 // Rolls an item from the group (if any) and adds the item to the loot
-                void Process(Loot& loot, Player const* lootOwner, bool rate, LootStatsData* lootStats = nullptr) const;
+                void Process(Loot& loot, Player const* lootOwner, bool rate, LootStatsData* lootStats = nullptr, Group const* pGroup = nullptr) const;
                 float RawTotalChance() const;                       // Overall chance for the group (without equal chanced items)
                 float TotalChance() const;                          // Overall chance for the group
 
@@ -281,7 +281,7 @@ class LootTemplate
                 LootStoreItemList EqualChanced;                     // Zero chances - every entry takes the same chance
 
                 // Rolls an item from the group, returns nullptr if all miss their chances
-                LootStoreItem const* Roll(Loot const& loot, Player const* lootOwner) const;
+                LootStoreItem const* Roll(Loot const& loot, Player const* lootOwner, Group const* pGroup) const;
         };
         using LootGroups = std::vector<LootGroup>;
 

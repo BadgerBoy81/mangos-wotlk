@@ -168,6 +168,9 @@ class Group
         ObjectGuid const& GetLeaderGuid() const { return m_leaderGuid; }
         const char*       GetLeaderName() const { return m_leaderName.c_str(); }
 
+        bool HasClass(uint32 allowedClass) const;
+        bool CanLootSetItem(uint32 itemId, uint32 itemClass, uint32 itemSet, bool isBop) const;
+
         // member manipulation methods
         bool IsMember(ObjectGuid guid) const { return _getMemberCSlot(guid) != m_memberSlots.end(); }
         bool IsLeader(ObjectGuid guid) const { return GetLeaderGuid() == guid; }

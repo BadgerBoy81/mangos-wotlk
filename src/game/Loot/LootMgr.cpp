@@ -2549,7 +2549,7 @@ void LootTemplate::LootGroup::AddEntry(LootStoreItem const& item)
 }
 
 // Rolls an item from the group, returns NULL if all miss their chances
-LootStoreItem const* LootTemplate::LootGroup::Roll(Loot const& loot, Player const* lootOwner) const
+LootStoreItem const* LootTemplate::LootGroup::Roll(Loot const& loot, Player const* lootOwner, Group const* pGroup = nullptr) const
 {
     if (!ExplicitlyChanced.empty())                         // First explicitly chanced entries are checked
     {
@@ -2557,8 +2557,22 @@ LootStoreItem const* LootTemplate::LootGroup::Roll(Loot const& loot, Player cons
 
         // fill the new vector with correct pointer to our item list
         for (auto& itr : ExplicitlyChanced)
-            lootStoreItemVector.push_back(&itr);
-
+        {
+            if (pGroup == nullptr ||
+                (
+                    ObjectMgr::GetItemPrototype(itr.itemid) &&
+                    pGroup->HasClass(ObjectMgr::GetItemPrototype(itr.itemid)->AllowableClass) &&
+                    pGroup->CanLootSetItem(
+                        itr.itemid,
+                        ObjectMgr::GetItemPrototype(itr.itemid)->AllowableClass,
+                        ObjectMgr::GetItemPrototype(itr.itemid)->ItemSet,
+                        ObjectMgr::GetItemPrototype(itr.itemid)->Bonding == 1
+                    )
+                    ))
+            {
+                lootStoreItemVector.push_back(&itr);
+            }
+        }
         // randomize the new vector
         shuffle(lootStoreItemVector.begin(), lootStoreItemVector.end(), *GetRandomGenerator());
 
@@ -2590,8 +2604,22 @@ LootStoreItem const* LootTemplate::LootGroup::Roll(Loot const& loot, Player cons
 
         // fill the new vector with correct pointer to our item list
         for (auto& itr : EqualChanced)
-            lootStoreItemVector.push_back(&itr);
-
+        {
+            if (pGroup == nullptr ||
+                (
+                    ObjectMgr::GetItemPrototype(itr.itemid) &&
+                    pGroup->HasClass(ObjectMgr::GetItemPrototype(itr.itemid)->AllowableClass) &&
+                    pGroup->CanLootSetItem(
+                        itr.itemid,
+                        ObjectMgr::GetItemPrototype(itr.itemid)->AllowableClass,
+                        ObjectMgr::GetItemPrototype(itr.itemid)->ItemSet,
+                        ObjectMgr::GetItemPrototype(itr.itemid)->Bonding == 1
+                    )
+                    ))
+            {
+                lootStoreItemVector.push_back(&itr);
+            }
+        }
         // randomize the new vector
         std::shuffle(lootStoreItemVector.begin(), lootStoreItemVector.end(), *GetRandomGenerator());
 
@@ -2647,7 +2675,7 @@ bool LootTemplate::LootGroup::HasQuestDropForPlayer(Player const* player) const
 }
 
 // Rolls an item from the group (if any takes its chance) and adds the item to the loot
-void LootTemplate::LootGroup::Process(Loot& loot, Player const* lootOwner, bool rate, LootStatsData* lootStatsData /*= nullptr*/) const
+void LootTemplate::LootGroup::Process(Loot& loot, Player const* lootOwner, bool rate, LootStatsData* lootStatsData /*= nullptr*/, Group const* pGroup) const
 {
     LootStats::GroupStats* groupStats = nullptr;
     if (lootStatsData)
@@ -2655,7 +2683,7 @@ void LootTemplate::LootGroup::Process(Loot& loot, Player const* lootOwner, bool 
         groupStats = lootStatsData->stats->GetStatsForLootId(lootStatsData->groupIdOrItemId);
     }
 
-    LootStoreItem const* item = Roll(loot, lootOwner);
+    LootStoreItem const* item = Roll(loot, lootOwner, pGroup);
     if (item != nullptr)
     {
         if (item->mincountOrRef > 0)
@@ -2770,6 +2798,10 @@ void LootTemplate::Process(Loot& loot, Player const* lootOwner, bool rate, LootS
         groupStats = lootStatsData->stats->GetStatsForLootId(lootStatsData->groupIdOrItemId);
     }
 
+    const Group* pGroup = nullptr;
+    if (lootOwner)
+        pGroup = lootOwner->GetGroup();
+
     // Rolling non-grouped items
     for (auto const& Entrie : Entries)
     {
@@ -2800,6 +2832,15 @@ void LootTemplate::Process(Loot& loot, Player const* lootOwner, bool rate, LootS
             for (uint32 loop = 0; loop < Entrie.maxcount; ++loop) // Ref multiplicator
                 Referenced->Process(loot, lootOwner, rate, lsData.get());
         }
+
+        else if (
+            ObjectMgr::GetItemPrototype(Entrie.itemid) &&
+            ObjectMgr::GetItemPrototype(Entrie.itemid)->AllowableClass != -1 &&
+            pGroup != nullptr &&
+            !pGroup->HasClass(ObjectMgr::GetItemPrototype(Entrie.itemid)->AllowableClass))
+        {
+            continue;
+        }
         else                                                // Plain entries (not a reference, not grouped)
         {
             loot.AddItem(Entrie);                               // Chance is already checked, just add
@@ -2811,7 +2852,7 @@ void LootTemplate::Process(Loot& loot, Player const* lootOwner, bool rate, LootS
 
     // Now processing groups
     for (auto const& Group : Groups)
-        Group.Process(loot, lootOwner, rate, lootStatsData);
+        Group.Process(loot, lootOwner, rate, lootStatsData, pGroup);
 }
 
 // True if template includes at least 1 quest drop entry
