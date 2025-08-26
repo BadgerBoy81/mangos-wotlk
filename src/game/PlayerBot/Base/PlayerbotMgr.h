@@ -87,6 +87,7 @@ class PlayerbotMgr
         uint32 m_confCollectDistanceMax;
         uint32 m_warlockMaxSoulShards;
         uint32 m_warlockMinBagspaceForCreatingShards;
+        bool m_onlyEngageWhenInGroup;
 
     private:
         Player* const m_master;

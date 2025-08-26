@@ -105,10 +105,20 @@ PlayerbotAI.SellAll.LevelDiff = 10
 #         Default is 15
 #    PlayerbotAI.Warlock.MinBagspaceForCreatingShards
 #         Sets the amount of free space required to allow bot
-#         o create sould shards. Default is 15
+#         to create sould shards. Default is 15
 #                                
 ####################################################################
 
 PlayerbotAI.Warlock.MaxShards = 2
 PlayerbotAI.Warlock.MinBagspaceForCreatingShards = 15
 
+####################################################################
+#                                
+#    Combat settings             
+#                                
+#    PlayerbotAI.Combat.OnlyEngageWhenInGroup
+#         Controls wheter a bot is allowed to engage in combat 
+#         if not included in a group. Default is 0
+####################################################################
+
+PlayerbotAI.Combat.OnlyEngageWhenInGroup = 1

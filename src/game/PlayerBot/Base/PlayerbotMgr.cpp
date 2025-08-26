@@ -79,6 +79,7 @@ PlayerbotMgr::PlayerbotMgr(Player* const master) : m_master(master)
     }
     m_warlockMaxSoulShards = botConfig.GetIntDefault("PlayerbotAI.Warlock.MaxShards", 15);
     m_warlockMinBagspaceForCreatingShards = botConfig.GetIntDefault("PlayerbotAI.Warlock.MinBagspaceForCreatingShards", 15);
+	m_onlyEngageWhenInGroup = botConfig.GetBoolDefault("PlayerbotAI.Combat.OnlyEngageWhenInGroup", false);
 }
 
 PlayerbotMgr::~PlayerbotMgr()
