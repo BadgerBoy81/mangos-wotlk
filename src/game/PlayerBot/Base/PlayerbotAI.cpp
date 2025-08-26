@@ -5079,74 +5079,7 @@ void PlayerbotAI::UpdateAI(const uint32 /*p_time*/)
 
     if (!m_bot->IsAlive())
     {
-        if (m_botState == BOTSTATE_DEAD)
-        {
-            // become ghost
-            if (m_bot->GetCorpse())
-            {
-                // DEBUG_LOG ("[PlayerbotAI]: UpdateAI - %s already has a corpse...", m_bot->GetName() );
-                SetState(BOTSTATE_DEADRELEASED);
-                return;
-            }
-            m_bot->SetBotDeathTimer();
-            m_bot->BuildPlayerRepop();
-            // relocate ghost
-            WorldLocation loc;
-            Corpse* corpse = m_bot->GetCorpse();
-            corpse->GetPosition(loc);
-            m_bot->TeleportTo(loc.mapid, loc.coord_x, loc.coord_y, loc.coord_z, m_bot->GetOrientation());
-            // set state to released
-            SetState(BOTSTATE_DEADRELEASED);
-
-            return;
-        }
-
-        if (m_botState == BOTSTATE_DEADRELEASED)
-        {
-            // get bot's corpse
-            Corpse* corpse = m_bot->GetCorpse();
-            if (!corpse)
-                // DEBUG_LOG ("[PlayerbotAI]: UpdateAI - %s has no corpse!", m_bot->GetName() );
-                return;
-
-            // check if we are allowed to resurrect now
-            time_t resurrect_time = corpse->GetGhostTime() + m_bot->GetCorpseReclaimDelay(corpse->GetType() == CORPSE_RESURRECTABLE_PVP);
-            if (resurrect_time > CurrentTime())
-            {
-                SetIgnoreUpdateTime(resurrect_time);
-                // DEBUG_LOG ("[PlayerbotAI]: UpdateAI - %s has to wait for %d seconds to revive...", m_bot->GetName(), m_ignoreAIUpdatesUntilTime-CurrentTime());
-                return;
-            }
-            // resurrect now
-            // DEBUG_LOG ("[PlayerbotAI]: UpdateAI - Reviving %s to corpse...", m_bot->GetName() );
-
-            SetIgnoreUpdateTime(6);
-
-            PlayerbotChatHandler ch(GetMaster());
-            if (!ch.revive(*m_bot))
-            {
-                ch.sysmessage(".. could not be revived ..");
-                return;
-            }
-            // set back to normal
-            SetState(BOTSTATE_NORMAL);
-
-            return;
-        }
-
-        // if (m_botState != BOTSTATE_DEAD && m_botState != BOTSTATE_DEADRELEASED)
-        // DEBUG_LOG ("[PlayerbotAI]: UpdateAI - %s died and is not in correct state...", m_bot->GetName());
-        // clear loot list on death
-        m_lootTargets.clear();
-        m_lootCurrent = ObjectGuid();
-        // clear combat orders
-        m_bot->SetSelectionGuid(ObjectGuid());
-        m_bot->GetMotionMaster()->Clear(true);
-        // set state to dead
-        SetState(BOTSTATE_DEAD);
-        // wait 30sec
-        SetIgnoreUpdateTime(30);
-
+        _HandleAIUpdateStateDead();
         return;
     }
 
@@ -5158,7 +5091,7 @@ void PlayerbotAI::UpdateAI(const uint32 /*p_time*/)
     }
     else if (m_bot->IsSwimming())   // Clear swimming when going out of water
         m_bot->m_movementInfo.RemoveMovementFlag(MOVEFLAG_SWIMMING);
-    
+
     // bot still alive
     if (!m_findNPC.empty())
         findNearbyCreature();
@@ -5176,46 +5109,7 @@ void PlayerbotAI::UpdateAI(const uint32 /*p_time*/)
 
     if (m_botState == BOTSTATE_TAME)
     {
-        Unit* pTarget = ObjectAccessor::GetUnit(*m_bot, m_targetGuidCommand);
-        if (!pTarget)
-            return;
-
-        m_bot->SetSelectionGuid(m_targetGuidCommand);
-
-        if (!In_Range(pTarget, TAME_BEAST_1))
-            m_bot->clearUnitState(UNIT_STAT_CHASE);
-
-        if (!m_bot->hasUnitState(UNIT_STAT_CHASE))
-        {
-            m_bot->GetMotionMaster()->MoveChase(pTarget);
-            return;
-        }
-
-        SpellEntry const* spellInfo = sSpellTemplate.LookupEntry<SpellEntry>(TAME_BEAST_1);
-        if (!spellInfo)
-            return;
-
-        Spell* spell = new Spell(m_bot, spellInfo, false);
-        if (!spell)
-            return;
-
-        if (m_bot->GetPetGuid() || spell->CheckCast(true) != SPELL_CAST_OK || !pTarget ||
-                pTarget->IsDead() || !m_bot->IsInMap(pTarget) || !(((Creature*) pTarget)->GetCreatureInfo()->HasFlag(CreatureTypeFlags::TAMEABLE)))
-        {
-            MovementReset();
-            m_bot->SetSelectionGuid(ObjectGuid());
-            SetState(BOTSTATE_NORMAL);
-            SetIgnoreUpdateTime(0);
-        }
-        else if (!m_bot->HasAura(TAME_BEAST_1, EFFECT_INDEX_1))
-        {
-            m_bot->SetFacingTo(m_bot->GetAngle(pTarget));
-            SpellCastTargets targets;
-            targets.setUnitTarget(pTarget);
-            spell->SpellStart(&targets);
-            SetIgnoreUpdateTime(10);
-        }
-
+        _HandleAIUpdateStateTaming();
         return;
     }
 
@@ -5354,6 +5248,124 @@ void PlayerbotAI::UpdateAI(const uint32 /*p_time*/)
         }
         return;
     }
+}
+
+void PlayerbotAI::_HandleAIUpdateStateDead()
+{
+    if (m_botState == BOTSTATE_DEAD)
+    {
+        // become ghost
+        if (m_bot->GetCorpse())
+        {
+            // DEBUG_LOG ("[PlayerbotAI]: UpdateAI - %s already has a corpse...", m_bot->GetName() );
+            SetState(BOTSTATE_DEADRELEASED);
+            return;
+        }
+        m_bot->SetBotDeathTimer();
+        m_bot->BuildPlayerRepop();
+        // relocate ghost
+        WorldLocation loc;
+        Corpse* corpse = m_bot->GetCorpse();
+        corpse->GetPosition(loc);
+        m_bot->TeleportTo(loc.mapid, loc.coord_x, loc.coord_y, loc.coord_z, m_bot->GetOrientation());
+        // set state to released
+        SetState(BOTSTATE_DEADRELEASED);
+
+        return;
+    }
+
+    if (m_botState == BOTSTATE_DEADRELEASED)
+    {
+        // get bot's corpse
+        Corpse* corpse = m_bot->GetCorpse();
+        if (!corpse)
+            // DEBUG_LOG ("[PlayerbotAI]: UpdateAI - %s has no corpse!", m_bot->GetName() );
+            return;
+
+        // check if we are allowed to resurrect now
+        time_t resurrect_time = corpse->GetGhostTime() + m_bot->GetCorpseReclaimDelay(corpse->GetType() == CORPSE_RESURRECTABLE_PVP);
+        if (resurrect_time > CurrentTime())
+        {
+            SetIgnoreUpdateTime(resurrect_time);
+            // DEBUG_LOG ("[PlayerbotAI]: UpdateAI - %s has to wait for %d seconds to revive...", m_bot->GetName(), m_ignoreAIUpdatesUntilTime-CurrentTime());
+            return;
+        }
+        // resurrect now
+        // DEBUG_LOG ("[PlayerbotAI]: UpdateAI - Reviving %s to corpse...", m_bot->GetName() );
+
+        SetIgnoreUpdateTime(6);
+
+        PlayerbotChatHandler ch(GetMaster());
+        if (!ch.revive(*m_bot))
+        {
+            ch.sysmessage(".. could not be revived ..");
+            return;
+        }
+        // set back to normal
+        SetState(BOTSTATE_NORMAL);
+
+        return;
+    }
+
+    // if (m_botState != BOTSTATE_DEAD && m_botState != BOTSTATE_DEADRELEASED)
+    // DEBUG_LOG ("[PlayerbotAI]: UpdateAI - %s died and is not in correct state...", m_bot->GetName());
+    // clear loot list on death
+    m_lootTargets.clear();
+    m_lootCurrent = ObjectGuid();
+    // clear combat orders
+    m_bot->SetSelectionGuid(ObjectGuid());
+    m_bot->GetMotionMaster()->Clear(true);
+    // set state to dead
+    SetState(BOTSTATE_DEAD);
+    // wait 30sec
+    SetIgnoreUpdateTime(30);
+
+    return;
+}
+
+void PlayerbotAI::_HandleAIUpdateStateTaming()
+{
+    Unit* pTarget = ObjectAccessor::GetUnit(*m_bot, m_targetGuidCommand);
+    if (!pTarget)
+        return;
+
+    m_bot->SetSelectionGuid(m_targetGuidCommand);
+
+    if (!In_Range(pTarget, TAME_BEAST_1))
+        m_bot->clearUnitState(UNIT_STAT_CHASE);
+
+    if (!m_bot->hasUnitState(UNIT_STAT_CHASE))
+    {
+        m_bot->GetMotionMaster()->MoveChase(pTarget);
+        return;
+    }
+
+    SpellEntry const* spellInfo = sSpellTemplate.LookupEntry<SpellEntry>(TAME_BEAST_1);
+    if (!spellInfo)
+        return;
+
+    Spell* spell = new Spell(m_bot, spellInfo, false);
+    if (!spell)
+        return;
+
+    if (m_bot->GetPetGuid() || spell->CheckCast(true) != SPELL_CAST_OK || !pTarget ||
+        pTarget->IsDead() || !m_bot->IsInMap(pTarget) || !(((Creature*)pTarget)->GetCreatureInfo()->HasFlag(CreatureTypeFlags::TAMEABLE)))
+    {
+        MovementReset();
+        m_bot->SetSelectionGuid(ObjectGuid());
+        SetState(BOTSTATE_NORMAL);
+        SetIgnoreUpdateTime(0);
+    }
+    else if (!m_bot->HasAura(TAME_BEAST_1, EFFECT_INDEX_1))
+    {
+        m_bot->SetFacingTo(m_bot->GetAngle(pTarget));
+        SpellCastTargets targets;
+        targets.setUnitTarget(pTarget);
+        spell->SpellStart(&targets);
+        SetIgnoreUpdateTime(10);
+    }
+
+    return;
 }
 
 Spell* PlayerbotAI::GetCurrentSpell() const

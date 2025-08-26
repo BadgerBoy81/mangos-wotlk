@@ -2059,6 +2059,8 @@ class PlayerbotAI
         void _HandleCommandGM(std::string& text, Player& fromPlayer);
         std::string _HandleCommandHelpHelper(std::string sCommand, std::string sExplain, HELPERLINKABLES reqLink = HL_NONE, bool bReqLinkMultiples = false, bool bCommandShort = false);
 
+        void _HandleAIUpdateStateDead();
+        void _HandleAIUpdateStateTaming();
         // ****** Closed Actions ********************************
         // These actions may only be called at special times.
         // Trade methods are only applicable when the trade window is open
