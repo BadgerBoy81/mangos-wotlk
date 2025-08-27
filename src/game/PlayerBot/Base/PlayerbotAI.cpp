@@ -5045,21 +5045,17 @@ void PlayerbotAI::UpdateAI(const uint32 /*p_time*/)
     
     if (m_botState == BOTSTATE_LOADING)
     {
-        if (m_bot->IsBeingTeleported())
-            return;
-        else
+        if (!m_bot->IsBeingTeleported())
         {
             // is bot too far from the follow target
             if (!m_bot->IsWithinDistInMap(m_followTarget, 50))
             {
                 DoTeleport(*m_followTarget);
-                return;
             }
             else
                 SetState(BOTSTATE_NORMAL);
-
-            return;
         }
+        return;
     }
 
     if (m_bot->IsBeingTeleported() || m_bot->GetTrader())
