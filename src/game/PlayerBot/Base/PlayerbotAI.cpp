@@ -9522,6 +9522,21 @@ void PlayerbotAI::_HandleCommandStay(std::string& text, Player& fromPlayer)
     SetMovementOrder(MOVEMENT_STAY);
 }
 
+Unit* PlayerbotAI::GetPriorityMarkedTarget(Group* group)
+{
+    const auto& markedTargets = group->GetAllMarkedTargets();
+    for (int icon : targetPriority)
+    {
+        const ObjectGuid& targetGuid = markedTargets[icon];
+        if (targetGuid.IsEmpty())
+			continue; // skip empty targets
+		Unit* target = ObjectAccessor::GetUnit(*m_bot, targetGuid);
+        if (target->IsAlive() && target->IsInWorld())
+            return target;
+    }
+    return nullptr;
+}
+
 void PlayerbotAI::_HandleCommandAttack(std::string& text, Player& fromPlayer)
 {
     if (!text.empty())

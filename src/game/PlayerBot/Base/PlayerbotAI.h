@@ -1720,6 +1720,17 @@ class PlayerbotAI
             HL_RECIPE
         };
 
+        std::array<int, TARGET_ICON_COUNT> targetPriority = {
+            TARGET_ICON_SKULL,    // Highest priority
+            TARGET_ICON_CROSS,    // Second highest priority
+            TARGET_ICON_STAR,     // Third priority
+            TARGET_ICON_CIRCLE,   // Fourth priority
+            TARGET_ICON_SQUARE,   // Fifth priority
+            TARGET_ICON_DIAMOND,  // Sixth priority
+            TARGET_ICON_TRIANGLE, // Seventh priority
+            TARGET_ICON_MOON      // Lowest priority
+        };
+
     public:
         PlayerbotAI(PlayerbotMgr& mgr, Player* const bot, bool debugWhisper);
         virtual ~PlayerbotAI();
@@ -2061,6 +2072,7 @@ class PlayerbotAI
 
         void _HandleAIUpdateStateDead();
         void _HandleAIUpdateStateTaming();
+        Unit* PlayerbotAI::GetPriorityMarkedTarget(Group* group);
         // ****** Closed Actions ********************************
         // These actions may only be called at special times.
         // Trade methods are only applicable when the trade window is open

@@ -105,6 +105,18 @@ enum GroupUpdateFlags
     GROUP_UPDATE_FULL                   = 0x0007FFFF,       // all known flags
 };
 
+enum GROUP_TARGET_ICONS
+{
+	TARGET_ICON_STAR = 0,
+	TARGET_ICON_CIRCLE = 1,
+	TARGET_ICON_DIAMOND = 2,
+	TARGET_ICON_TRIANGLE = 3,
+	TARGET_ICON_MOON = 4,
+	TARGET_ICON_SQUARE = 5,
+	TARGET_ICON_CROSS = 6,
+	TARGET_ICON_SKULL = 7,
+};
+
 #define GROUP_UPDATE_FLAGS_COUNT          20
 // 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,11,12,13,14,15,16,17,18,19
 static const uint8 GroupUpdateLength[GROUP_UPDATE_FLAGS_COUNT] = { 0, 2, 2, 2, 1, 2, 2, 2, 2, 4, 8, 8, 1, 2, 2, 2, 1, 2, 2, 8};
@@ -258,6 +270,10 @@ class Group
 #ifdef ENABLE_PLAYERBOTS
         ObjectGuid GetTargetIcon(uint8 id) { return m_targetIcons[id]; }
 #endif
+#ifdef BUILD_DEPRECATED_PLAYERBOT
+        ObjectGuid GetTargetIcon(uint8 id) { return m_targetIcons[id]; }
+        const std::array<ObjectGuid, TARGET_ICON_COUNT>& GetAllMarkedTargets() const { return m_targetIcons; }
+#endif
 
         Difficulty GetDifficulty(bool isRaid) const { return isRaid ? m_raidDifficulty : m_dungeonDifficulty; }
         Difficulty GetDungeonDifficulty() const { return m_dungeonDifficulty; }
@@ -378,27 +394,27 @@ class Group
                 flags |= GROUP_MAIN_TANK;
             return GroupFlagMask(flags);
         }
-        uint32              m_Id;                           // 0 for not created or BG groups
-        MemberSlotList      m_memberSlots;
-        GroupRefManager     m_memberMgr;
-        InvitesList         m_invitees;
-        ObjectGuid          m_leaderGuid;
-        std::string         m_leaderName;
-        time_t              m_leaderLastOnline;
-        ObjectGuid          m_mainTankGuid;
-        ObjectGuid          m_mainAssistantGuid;
-        GroupType           m_groupFlags;
-        Difficulty          m_dungeonDifficulty;
-        Difficulty          m_raidDifficulty;
-        BattleGround*       m_bgGroup;
-        Battlefield*        m_bfGroup;
-        ObjectGuid          m_targetIcons[TARGET_ICON_COUNT];
-        LootMethod          m_lootMethod;
-        ItemQualities       m_lootThreshold;
-        ObjectGuid          m_masterLooterGuid;
-        ObjectGuid          m_currentLooterGuid;
-        BoundInstancesMap   m_boundInstances[MAX_DIFFICULTY];
-        uint8*              m_subGroupsCounts;
+        uint32                              m_Id;                           // 0 for not created or BG groups
+        MemberSlotList                              m_memberSlots;
+        GroupRefManager                             m_memberMgr;
+        InvitesList                                 m_invitees;
+        ObjectGuid                                  m_leaderGuid;
+        std::string                                 m_leaderName;
+        time_t                                      m_leaderLastOnline;
+        ObjectGuid                                  m_mainTankGuid;
+        ObjectGuid                                  m_mainAssistantGuid;
+        GroupType                                   m_groupFlags;
+        Difficulty                                  m_dungeonDifficulty;
+        Difficulty                                  m_raidDifficulty;
+        BattleGround*                               m_bgGroup;
+        Battlefield*                                m_bfGroup;
+        std::array<ObjectGuid, TARGET_ICON_COUNT>   m_targetIcons;
+        LootMethod                                  m_lootMethod;
+        ItemQualities                               m_lootThreshold;
+        ObjectGuid                                  m_masterLooterGuid;
+        ObjectGuid                                  m_currentLooterGuid;
+        BoundInstancesMap                           m_boundInstances[MAX_DIFFICULTY];
+        uint8*                                      m_subGroupsCounts;
 
         LFGData             m_lfgData;
 
