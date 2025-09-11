@@ -2579,7 +2579,7 @@ void PlayerbotAI::HandleBotOutgoingPacket(const WorldPacket& packet)
         }
         case SMSG_TRANSFER_PENDING:
         {
-            if (m_debugWhisper)
+            //if (m_debugWhisper)
                 TellMaster("World transfer is pending");
             SetState(BOTSTATE_LOADING);
             SetIgnoreUpdateTime(1);
@@ -2588,7 +2588,7 @@ void PlayerbotAI::HandleBotOutgoingPacket(const WorldPacket& packet)
         }
         case SMSG_NEW_WORLD:
         {
-            if (m_debugWhisper)
+            //if (m_debugWhisper)
                 TellMaster("Preparing to teleport far");
 
             if (m_bot->IsBeingTeleportedFar())
@@ -4795,114 +4795,111 @@ void PlayerbotAI::MovementReset()
 {
     // stop moving...
     MovementClear();
-    if (m_movementOrder == MOVEMENT_FOLLOW)
+    if (m_movementOrder != MOVEMENT_FOLLOW || !m_followTarget || m_bot->IsInCombat())
     {
-        if (!m_followTarget)
+        return;
+    }
+
+    Player* pTarget;                            // target is player
+    if (m_followTarget->GetTypeId() == TYPEID_PLAYER)
+        pTarget = ((Player*) m_followTarget);
+
+    if (pTarget)
+    {
+        // check player for follow situations
+        if (pTarget->IsBeingTeleported() || pTarget->IsTaxiFlying() || pTarget->GetCorpse())
             return;
+    }
 
-        // don't follow while in combat
-        if (m_bot->IsInCombat())
-            return;
+    // is bot too far from the follow target
+    if (!m_bot->IsWithinDistInMap(m_followTarget, 50))
+    {
+        DoTeleport(*m_followTarget);
+        return;
+    }
 
-        Player* pTarget;                            // target is player
-        if (m_followTarget->GetTypeId() == TYPEID_PLAYER)
-            pTarget = ((Player*) m_followTarget);
+    if (!m_bot->IsAlive() || m_bot->IsBeingTeleported())
+    {
+        return;
+    }
 
-        if (pTarget)
+    if (DistOverRide != 0)
+    {
+        if (m_FollowAutoGo == FOLLOWAUTOGO_OFF)
         {
-            // check player for follow situations
-            if (pTarget->IsBeingTeleported() || pTarget->IsTaxiFlying() || pTarget->GetCorpse())
-                return;
-        }
-
-        // is bot too far from the follow target
-        if (!m_bot->IsWithinDistInMap(m_followTarget, 50))
-        {
-            DoTeleport(*m_followTarget);
-            return;
-        }
-
-        if (m_bot->IsAlive() && !m_bot->IsBeingTeleported())
-        {
-            if (DistOverRide != 0)
+            if (IsUpOrDown < DistOverRide)
             {
-                if (m_FollowAutoGo == FOLLOWAUTOGO_OFF)
+                IsUpOrDown = DistOverRide;
+                gTempDist = (gTempDist + 1.0);
+                gTempDist2 = (gTempDist2 + 1.0);
+            }
+            if (IsUpOrDown > DistOverRide)
+            {
+                if (IsUpOrDown >= 2)
                 {
-                    if (IsUpOrDown < DistOverRide)
-                    {
-                        IsUpOrDown = DistOverRide;
-                        gTempDist = (gTempDist + 1.0);
-                        gTempDist2 = (gTempDist2 + 1.0);
-                    }
-                    if (IsUpOrDown > DistOverRide)
-                    {
-                        if (IsUpOrDown >= 2)
-                        {
-                            IsUpOrDown = DistOverRide;
-                            gTempDist = (gTempDist - 1.0);
-                            gTempDist2 = (gTempDist2 - 1.0);
-                        }
-                    }
-                }
-                else
-                {
-                    if (IsUpOrDown < DistOverRide)
-                    {
-                        gTempDist = 1.0;
-                        gTempDist2 = 2.0;
-                        IsUpOrDown = 0;
-                        for (IsUpOrDown = 0; IsUpOrDown < DistOverRide; ++IsUpOrDown)
-                        {
-                            gTempDist = (gTempDist + 1.0);
-                            gTempDist2 = (gTempDist2 + 1.0);
-                        }
-                        IsUpOrDown = DistOverRide;
-                    }
-                    else if (IsUpOrDown > DistOverRide)
-                    {
-                        uint8 getdowndist = (IsUpOrDown - DistOverRide);
-                        for (uint8 getdowndistb = 0; getdowndistb < getdowndist; ++getdowndistb)
-                        {
-                            gTempDist = (gTempDist - 1.0);
-                            gTempDist2 = (gTempDist2 - 1.0);
-                        }
-                        IsUpOrDown = DistOverRide;
-                    }
-                }
-                if (m_FollowAutoGo != FOLLOWAUTOGO_RESET)
-                {
-                    gDist[0] = gTempDist;
-                    gDist[1] = gTempDist2;
-                }
-                else
-                {
-                    gDist[0] = 0.5f;
-                    gDist[1] = 1.0f;
-                    SetIgnoreUpdateTime(3);
-                    m_FollowAutoGo = FOLLOWAUTOGO_INIT;
+                    IsUpOrDown = DistOverRide;
+                    gTempDist = (gTempDist - 1.0);
+                    gTempDist2 = (gTempDist2 - 1.0);
                 }
             }
-            float dist = rand_float(m_mgr.m_confFollowDistance[0], m_mgr.m_confFollowDistance[1]);
-            float bdist = rand_float(gDist[0], gDist[1]);
-            float angle = rand_float(0, M_PI_F);
-            float bangle = rand_float(2.8f, 3.6f); // angle is based on radians
-            float TankAngle = 3.1f;
-            float AssistAngle = 2.8f;
-            if (DistOverRide != 0)
+        }
+        else
+        {
+            if (IsUpOrDown < DistOverRide)
             {
-                if (m_combatOrder & ORDERS_TANK)
-                    m_bot->GetMotionMaster()->MoveFollow(m_followTarget, bdist, TankAngle);
-                else if (m_combatOrder & ORDERS_ASSIST)
-                    m_bot->GetMotionMaster()->MoveFollow(m_followTarget, bdist, AssistAngle);
-                else
-                    m_bot->GetMotionMaster()->MoveFollow(m_followTarget, bdist, bangle);
+                gTempDist = 1.0;
+                gTempDist2 = 2.0;
+                IsUpOrDown = 0;
+                for (IsUpOrDown = 0; IsUpOrDown < DistOverRide; ++IsUpOrDown)
+                {
+                    gTempDist = (gTempDist + 1.0);
+                    gTempDist2 = (gTempDist2 + 1.0);
+                }
+                IsUpOrDown = DistOverRide;
             }
-            else
-                m_bot->GetMotionMaster()->MoveFollow(m_followTarget, dist, angle);
-            if (m_FollowAutoGo == FOLLOWAUTOGO_RUN)
-                m_FollowAutoGo = FOLLOWAUTOGO_INIT;
+            else if (IsUpOrDown > DistOverRide)
+            {
+                uint8 getdowndist = (IsUpOrDown - DistOverRide);
+                for (uint8 getdowndistb = 0; getdowndistb < getdowndist; ++getdowndistb)
+                {
+                    gTempDist = (gTempDist - 1.0);
+                    gTempDist2 = (gTempDist2 - 1.0);
+                }
+                IsUpOrDown = DistOverRide;
+            }
+        }
+        if (m_FollowAutoGo != FOLLOWAUTOGO_RESET)
+        {
+            gDist[0] = gTempDist;
+            gDist[1] = gTempDist2;
+        }
+        else
+        {
+            gDist[0] = 0.5f;
+            gDist[1] = 1.0f;
+            SetIgnoreUpdateTime(3);
+            m_FollowAutoGo = FOLLOWAUTOGO_INIT;
         }
     }
+    float dist = rand_float(m_mgr.m_confFollowDistance[0], m_mgr.m_confFollowDistance[1]);
+    float bdist = rand_float(gDist[0], gDist[1]);
+    float angle = rand_float(0, M_PI_F);
+    float bangle = rand_float(2.8f, 3.6f); // angle is based on radians
+    float TankAngle = 3.1f;
+    float AssistAngle = 2.8f;
+    if (DistOverRide != 0)
+    {
+        if (m_combatOrder & ORDERS_TANK)
+            m_bot->GetMotionMaster()->MoveFollow(m_followTarget, bdist, TankAngle);
+        else if (m_combatOrder & ORDERS_ASSIST)
+            m_bot->GetMotionMaster()->MoveFollow(m_followTarget, bdist, AssistAngle);
+        else
+            m_bot->GetMotionMaster()->MoveFollow(m_followTarget, bdist, bangle);
+    }
+    else
+        m_bot->GetMotionMaster()->MoveFollow(m_followTarget, dist, angle);
+    if (m_FollowAutoGo == FOLLOWAUTOGO_RUN)
+        m_FollowAutoGo = FOLLOWAUTOGO_INIT;
 }
 
 void PlayerbotAI::MovementClear()
@@ -5154,13 +5151,14 @@ void PlayerbotAI::UpdateAI(const uint32 /*p_time*/)
         return;
     }
 
-    //if master is unmounted, unmount the bot
-    if (!GetMaster()->IsMounted() && m_bot->IsMounted())
-    {
-        WorldPacket emptyPacket;
-        m_bot->GetSession()->HandleCancelMountAuraOpcode(emptyPacket);  //updated code
-        return;
-    }
+    // wotlk is not handling mounting this way anymore it seems
+    ////if master is unmounted, unmount the bot
+    //if (!GetMaster()->IsMounted() && m_bot->IsMounted())
+    //{
+    //    WorldPacket emptyPacket;
+    //    m_bot->GetSession()->HandleCancelMountAuraOpcode(emptyPacket);  //updated code
+    //    return;
+    //}
 
     // handle combat (either self/master/group in combat, or combat state and valid target)
     if (IsInCombat() || (m_botState == BOTSTATE_COMBAT && m_targetCombat) ||  m_ScenarioType == SCENARIO_PVP_DUEL)
