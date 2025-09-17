@@ -1838,7 +1838,7 @@ class PlayerbotAI
         bool HasAura(const char* spellName, const Unit& player) const;
         bool HasAura(const char* spellName) const;
 
-        bool CanReceiveSpecificSpell(uint8 spec, Unit* target) const;
+        //bool CanReceiveSpecificSpell(uint8 spec, Unit* target) const;
 
         bool PickPocket(Unit* pTarget);
         bool HasTool(uint32 TC);        // TODO implement this for opening lock
@@ -2072,7 +2072,7 @@ class PlayerbotAI
 
         void _HandleAIUpdateStateDead();
         void _HandleAIUpdateStateTaming();
-        Unit* PlayerbotAI::GetPriorityMarkedTarget(Group* group);
+        Unit* GetPriorityMarkedTarget(Group* group);
         // ****** Closed Actions ********************************
         // These actions may only be called at special times.
         // Trade methods are only applicable when the trade window is open
