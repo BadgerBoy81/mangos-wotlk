@@ -117,6 +117,8 @@ PlayerbotShamanAI::PlayerbotShamanAI(Player& master, Player& bot, PlayerbotAI& a
     // Buffs that don't stack with totems
     IMPROVED_ICY_TALONS     = m_ai.initSpell(IMPROVED_ICY_TALONS_1);
     HORN_OF_WINTER          = m_ai.initSpell(HORN_OF_WINTER_1);
+
+    m_useFeralSpiritSpell = master.GetPlayerbotMgr()->m_shamanUseFeralSpiritSpell;
 }
 
 PlayerbotShamanAI::~PlayerbotShamanAI() {}
@@ -465,7 +467,7 @@ void PlayerbotShamanAI::UseCooldowns()
         case SHAMAN_SPEC_ENHANCEMENT:
             if (SHAMANISTIC_RAGE > 0 && m_ai.CastSpell(SHAMANISTIC_RAGE, m_bot) == SPELL_CAST_OK)
                 return;
-            else if (FERAL_SPIRIT > 0 && m_ai.CastSpell(FERAL_SPIRIT) == SPELL_CAST_OK)
+            else if (m_useFeralSpiritSpell && FERAL_SPIRIT > 0 && m_ai.CastSpell(FERAL_SPIRIT) == SPELL_CAST_OK)
                 return;
             break;
 

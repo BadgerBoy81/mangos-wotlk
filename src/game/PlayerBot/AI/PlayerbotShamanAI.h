@@ -260,6 +260,8 @@ class PlayerbotShamanAI : PlayerbotClassAI
                HORN_OF_WINTER;
 
         uint32 SpellSequence, LastSpellEnhancement, LastSpellRestoration, LastSpellElemental;
+
+        bool m_useFeralSpiritSpell;
 };
 
 #endif
