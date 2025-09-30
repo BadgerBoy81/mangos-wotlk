@@ -1979,7 +1979,15 @@ bool Player::Mount(uint32 displayid, bool auraExists, int32 auraAmount, bool isF
     m_pendingDismount = false;
     m_pendingTaxi = pendingTaxi;
 
-    SendCollisionHeightUpdate(newHeight);
+    if (!SendCollisionHeightUpdate(newHeight))
+    {
+        m_pendingMountId = 0;
+        m_pendingMountAuraAmount = 0;
+        m_pendingMountAura = false;
+        m_pendingMountAuraFlying = false;
+        m_pendingDismount = false;
+        m_pendingTaxi = false;
+    }
 
     return true;
 }

@@ -5151,14 +5151,12 @@ void PlayerbotAI::UpdateAI(const uint32 /*p_time*/)
         return;
     }
 
-    // wotlk is not handling mounting this way anymore it seems
-    ////if master is unmounted, unmount the bot
-    //if (!GetMaster()->IsMounted() && m_bot->IsMounted())
-    //{
-    //    WorldPacket emptyPacket;
-    //    m_bot->GetSession()->HandleCancelMountAuraOpcode(emptyPacket);  //updated code
-    //    return;
-    //}
+    //if master is unmounted, unmount the bot
+    if (!GetMaster()->IsMounted() && m_bot->IsMounted())
+    {
+        m_bot->Unmount();
+        return;
+    }
 
     // handle combat (either self/master/group in combat, or combat state and valid target)
     if (IsInCombat() || (m_botState == BOTSTATE_COMBAT && m_targetCombat) ||  m_ScenarioType == SCENARIO_PVP_DUEL)
@@ -9012,6 +9010,126 @@ void PlayerbotAI::GetTaxi(ObjectGuid guid, BotTaxiNode& nodes)
     }
 }
 
+//bool PlayerbotAI::Mount(uint32 displayid, bool auraExists, int32 auraAmount, bool isFlyingAura, bool pendingTaxi)
+//{
+//    if (m_pendingMountId)
+//        return false;
+//
+//    float height = GetCollisionHeight();
+//    uint32 newMountId = GetOverridenMountId() ? GetOverridenMountId() : displayid;
+//    float newHeight = CalculateCollisionHeight(newMountId);
+//
+//    m_pendingMountId = newMountId;
+//    m_pendingMountAura = auraExists;
+//    m_pendingMountAuraAmount = auraAmount;
+//    m_pendingMountAuraFlying = isFlyingAura;
+//    m_pendingDismount = false;
+//    m_pendingTaxi = pendingTaxi;
+//
+//    SendCollisionHeightUpdate(newHeight);
+//
+//    return true;
+//}
+//
+//bool PlayerbotAI::Unmount(bool auraExists, int32 auraAmount, bool isFlyingAura)
+//{
+//    float height = GetCollisionHeight();
+//    float newHeight = CalculateCollisionHeight(0);
+//
+//    m_pendingMountAura = auraExists;
+//    m_pendingMountAuraAmount = auraAmount;
+//    m_pendingMountAuraFlying = isFlyingAura;
+//    m_pendingDismount = true;
+//
+//    if (height != newHeight)
+//        SendCollisionHeightUpdate(newHeight);
+//    else
+//        ResolvePendingUnmount();
+//
+//    return true;
+//}
+//
+//bool PlayerbotAI::ResolvePendingMount()
+//{
+//    if (!Unit::Mount(m_pendingMountId, m_pendingMountAura, m_pendingMountAuraAmount))
+//        return false;
+//
+//    bool keepPetOnMount = !sWorld.getConfig(CONFIG_BOOL_PET_UNSUMMON_AT_MOUNT);
+//    bool keepPetOnFlyingMount = !keepPetOnMount ? false : sWorld.getConfig(CONFIG_BOOL_KEEP_PET_ON_FLYING_MOUNT);
+//    // Custom mount (non-aura such as taxi or command) or in flight: unsummon any pet
+//    if (!m_pendingMountAura || (!keepPetOnFlyingMount && (m_bot->IsFreeFlying() || m_pendingMountAuraFlying)))
+//    {
+//        m_bot->UnsummonPetTemporaryIfAny();
+//    }
+//    // Land mount aura: unsummon only permanent pet
+//    else if (m_pendingMountAura)
+//    {
+//        if (Pet* pet = GetPet())
+//        {
+//            if (pet->isControlled() && (!(pet->isTemporarySummoned() || m_bot->InArena() || keepPetOnMount)))
+//                m_bot->UnsummonPetTemporaryIfAny();
+//            else
+//                pet->SetModeFlags(PET_MODE_DISABLE_ACTIONS);
+//        }
+//    }
+//
+//    if (m_pendingMountAura)
+//    {
+//        m_bot->UpdateSpeed(MOVE_RUN, true); // update speed
+//        if (m_pendingMountAuraFlying)
+//            m_bot->UpdateSpeed(MOVE_FLIGHT, true);
+//    }
+//
+//    if (m_pendingTaxi)
+//        m_bot->GetMotionMaster()->MoveTaxi();
+//
+//    m_pendingMountId = 0;
+//
+//    return true;
+//}
+//
+//bool PlayerbotAI::ResolvePendingUnmount()
+//{
+//    if (!Unmount(m_pendingMountAura, m_pendingMountAuraAmount))
+//        return false;
+//
+//    // only resummon old pet if the player is already added to a map
+//    // this prevents adding a pet to a not created map which would otherwise cause a crash
+//    // (it could probably happen when logging in after a previous crash)
+//    if (Pet* pet = m_bot->GetPet())
+//    {
+//        // Get reaction state and display appropriately
+//        if (CharmInfo* charmInfo = pet->GetCharmInfo())
+//            pet->SetModeFlags(PetModeFlags(pet->AI()->GetReactState() | charmInfo->GetCommandState() * 0x100));
+//    }
+//    else
+//        m_bot->ResummonPetTemporaryUnSummonedIfAny();
+//
+//    if (m_pendingMountAura)
+//    {
+//        m_bot->UpdateSpeed(MOVE_RUN, true); // update speed
+//        if (m_pendingMountAuraFlying)
+//            m_bot->UpdateSpeed(MOVE_FLIGHT, true);
+//    }
+//
+//    return true;
+//}
+
+Unit* PlayerbotAI::GetPriorityMarkedTarget(Group* group)
+{
+    const auto& markedTargets = group->GetAllMarkedTargets();
+    for (int icon : targetPriority)
+    {
+        const ObjectGuid& targetGuid = markedTargets[icon];
+        if (targetGuid.IsEmpty())
+            continue; // skip empty targets
+        Unit* target = ObjectAccessor::GetUnit(*m_bot, targetGuid);
+        if (target->IsAlive() && target->IsInWorld())
+            return target;
+    }
+    return nullptr;
+}
+
 // handle commands sent through chat channels
 void PlayerbotAI::HandleCommand(const std::string& text, Player& fromPlayer)
 {
@@ -9516,20 +9634,6 @@ void PlayerbotAI::_HandleCommandStay(std::string& text, Player& fromPlayer)
     SetMovementOrder(MOVEMENT_STAY);
 }
 
-Unit* PlayerbotAI::GetPriorityMarkedTarget(Group* group)
-{
-    const auto& markedTargets = group->GetAllMarkedTargets();
-    for (int icon : targetPriority)
-    {
-        const ObjectGuid& targetGuid = markedTargets[icon];
-        if (targetGuid.IsEmpty())
-			continue; // skip empty targets
-		Unit* target = ObjectAccessor::GetUnit(*m_bot, targetGuid);
-        if (target->IsAlive() && target->IsInWorld())
-            return target;
-    }
-    return nullptr;
-}
 
 void PlayerbotAI::_HandleCommandAttack(std::string& text, Player& fromPlayer)
 {

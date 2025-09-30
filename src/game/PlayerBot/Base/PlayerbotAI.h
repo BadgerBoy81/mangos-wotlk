@@ -2025,6 +2025,12 @@ class PlayerbotAI
         std::string Cash(uint32 copper);
         std::string AuctionResult(std::string subject, std::string body);
 
+        bool Mount(uint32 displayid, bool auraExists = false, int32 auraAmount = 0, bool isFlyingAura = false, bool pendingTaxi = false);
+        bool Unmount(bool auraExists = false, int32 auraAmount = 0, bool isFlyingAura = false);
+
+        bool ResolvePendingMount();
+        bool ResolvePendingUnmount();
+
     protected:
         bool ValidateTalent(uint16 talent, long charClass);
         bool ValidateGlyph(uint16 glyph, long charClass);

@@ -77,9 +77,12 @@ PlayerbotMgr::PlayerbotMgr(Player* const master) : m_master(master)
         sLog.outError("Playerbot: PlayerbotAI.Collect.Distance higher than PlayerbotAI.Collect.DistanceMax. Using DistanceMax value");
         m_confCollectDistance = m_confCollectDistanceMax;
     }
+	m_onlyEngageWhenInGroup = botConfig.GetBoolDefault("PlayerbotAI.Combat.OnlyEngageWhenInGroup", false);
+
     m_warlockMaxSoulShards = botConfig.GetIntDefault("PlayerbotAI.Warlock.MaxShards", 15);
     m_warlockMinBagspaceForCreatingShards = botConfig.GetIntDefault("PlayerbotAI.Warlock.MinBagspaceForCreatingShards", 15);
-	m_onlyEngageWhenInGroup = botConfig.GetBoolDefault("PlayerbotAI.Combat.OnlyEngageWhenInGroup", false);
+
+    m_shamanUseFeralSpiritSpell = botConfig.GetBoolDefault("PlayerbotAI.Shaman.UseFeralSpiritSpell", false);
 }
 
 PlayerbotMgr::~PlayerbotMgr()
@@ -723,6 +726,48 @@ void PlayerbotMgr::HandleMasterIncomingPacket(const WorldPacket& packet)
             return;
         }
 
+        case CMSG_MOVE_SET_COLLISION_HGT_ACK:
+        {
+            /* extract packet */
+            WorldPacket p(packet);
+            p.rpos(0); // reset reader
+            ObjectGuid guid;
+            uint32 counter;
+            MovementInfo movementInfo;
+            float newspeed;
+
+            p >> guid.ReadAsPacked();
+            p >> counter; // counter or moveEvent
+            p >> movementInfo;
+            p >> newspeed;
+
+            for (PlayerBotMap::const_iterator it = GetPlayerBotsBegin(); it != GetPlayerBotsEnd(); ++it)
+            {
+                Player* const bot = it->second;
+                if (bot->GetDbGuid() != guid.GetRawValue())
+                    continue;
+                
+                Unit* mover = bot->GetMover();
+
+                // not sure if this might do something useful
+                //if (!GetMaster()->GetSession()->ProcessMovementInfo(movementInfo, mover, bot, p))
+                //    return;
+
+                WorldPacket data(MSG_MOVE_SET_COLLISION_HGT, 18);
+                data << guid.WriteAsPacked();
+                data << movementInfo;
+                data << newspeed; // new collision height
+                mover->SendMessageToSetExcept(data, bot);
+
+                if (bot->IsPendingDismount())
+                    bot->ResolvePendingUnmount();
+                else
+                    bot->ResolvePendingMount();
+                return;
+            }
+            return;
+        }
+
         /*
         case CMSG_NAME_QUERY:
         case MSG_MOVE_START_FORWARD:
@@ -1356,7 +1401,7 @@ bool ChatHandler::HandlePlayerbotCommand(char* args)
         CharacterDatabase.DirectPExecute("UPDATE characters SET online = 0 WHERE guid = '%u'", guid.GetCounter());
         mgr->LogoutPlayerBot(guid);
         PSendSysMessage("Bot removed successfully.");
-        HandleListAccountPlayersCommand("");
+        HandleListAccountPlayersCommand(nullptr);
     }
 
     return true;

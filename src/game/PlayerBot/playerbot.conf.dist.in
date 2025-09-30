@@ -106,11 +106,16 @@ PlayerbotAI.SellAll.LevelDiff = 10
 #    PlayerbotAI.Warlock.MinBagspaceForCreatingShards
 #         Sets the amount of free space required to allow bot
 #         to create sould shards. Default is 15
+#    PlayerbotAI.Shaman.UseFeralSpirit
+#         Enables toggling the use of feral spirit due to this spell 
+#         being completely unreliably and wildly pulling mobs.
+#         Default is 0
 #                                
 ####################################################################
 
 PlayerbotAI.Warlock.MaxShards = 2
 PlayerbotAI.Warlock.MinBagspaceForCreatingShards = 15
+PlayerbotAI.Shaman.UseFeralSpirit = 0
 
 ####################################################################
 #                                

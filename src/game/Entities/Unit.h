@@ -2295,7 +2295,7 @@ class Unit : public WorldObject
 
         // at any changes to scale and/or displayId
         void UpdateModelData();
-        void SendCollisionHeightUpdate(float height);
+        bool SendCollisionHeightUpdate(float height);
 
         DynamicObject* GetDynObject(uint32 spellId, SpellEffectIndex effIndex, Unit* target = nullptr);
         DynamicObject* GetDynObject(uint32 spellId);

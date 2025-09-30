@@ -12709,23 +12709,30 @@ void Unit::EndSpline()
     movespline->_Finalize();
 }
 
-void Unit::SendCollisionHeightUpdate(float height)
+bool Unit::SendCollisionHeightUpdate(float height)
 {
-    if (IsClientControlled() && IsInWorld())
-    {
-        if (Player const* player = GetControllingPlayer())
-        {
-            auto const counter = player->GetSession()->GetOrderCounter();
+    if (!IsClientControlled() || !IsInWorld())
+        return true;
+    Player const* player = GetControllingPlayer();
+    if (!player)
+        return false;
 
-            WorldPacket data(SMSG_MOVE_SET_COLLISION_HGT, GetPackGUID().size() + 4 + 4);
-            data << GetPackGUID();
-            data << counter;
-            data << height;
-            player->GetSession()->SendPacket(data);
-            player->GetSession()->GetAnticheat()->OrderSent(data.GetOpcode(), counter);
-            player->GetSession()->IncrementOrderCounter();
-        }
-    }
+#ifdef BUILD_DEPRECATED_PLAYERBOT
+
+    if (player->IsBot())
+        player = player->GetPlayerbotAI()->GetMaster();
+#endif // BUILD_DEPRECATED_PLAYERBOT
+    auto const counter = player->GetSession()->GetOrderCounter();
+
+    WorldPacket data(SMSG_MOVE_SET_COLLISION_HGT, GetPackGUID().size() + 4 + 4);
+    data << GetPackGUID();
+    data << counter;
+    data << height;
+    player->GetSession()->SendPacket(data);
+    player->GetSession()->GetAnticheat()->OrderSent(data.GetOpcode(), counter);
+    player->GetSession()->IncrementOrderCounter();
+
+    return true;
 }
 
 // This will create a new creature and set the current unit as the controller of that new creature
