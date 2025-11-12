@@ -2558,7 +2558,7 @@ LootStoreItem const* LootTemplate::LootGroup::Roll(Loot const& loot, Player cons
         // fill the new vector with correct pointer to our item list
         for (auto& itr : ExplicitlyChanced)
         {
-            if (pGroup == nullptr ||
+            if (pGroup == nullptr || itr.mincountOrRef < 0 ||
                 (
                     ObjectMgr::GetItemPrototype(itr.itemid) &&
                     pGroup->HasClass(ObjectMgr::GetItemPrototype(itr.itemid)->AllowableClass) &&
@@ -2803,18 +2803,21 @@ void LootTemplate::Process(Loot& loot, Player const* lootOwner, bool rate, LootS
         pGroup = lootOwner->GetGroup();
 
     // Rolling non-grouped items
-    for (auto const& Entrie : Entries)
+    for (auto const& LootEntry : Entries)
     {
         // Check condition
-        if (Entrie.conditionId && lootOwner && !PlayerOrGroupFulfilsCondition(loot, lootOwner, Entrie.conditionId))
+        if (LootEntry.conditionId && lootOwner && !PlayerOrGroupFulfilsCondition(loot, lootOwner, LootEntry.conditionId))
             continue;
 
-        if (!Entrie.Roll(rate))
-            continue;                                       // Bad luck for the entry
-
-        if (Entrie.mincountOrRef < 0)                           // References processing
+        if (!LootEntry.Roll(rate))
         {
-            LootTemplate const* Referenced = LootTemplates_Reference.GetLootFor(-Entrie.mincountOrRef);
+            sLog.outString("Failed luck roll for ", LootEntry);
+            continue; // Bad luck for the entry
+        }
+
+        if (LootEntry.mincountOrRef < 0) // References processing
+        {
+            LootTemplate const* Referenced = LootTemplates_Reference.GetLootFor(-LootEntry.mincountOrRef);
 
             if (!Referenced)
                 continue;                                   // Error message already printed at loading stage
@@ -2823,30 +2826,28 @@ void LootTemplate::Process(Loot& loot, Player const* lootOwner, bool rate, LootS
             // only used if we want some stats
             if (lootStatsData)
             {
-                lsData = std::make_unique<LootStatsData>(Entrie.mincountOrRef, lootStatsData->stats);
+                lsData = std::make_unique<LootStatsData>(LootEntry.mincountOrRef, lootStatsData->stats);
 
                 // no need to check groupStats here, if we have a lootStatsPair->first, we have a lootStatsPair->second
-                groupStats->IncItemCount(0, std::make_pair(Entrie.mincountOrRef, Entrie.itemIndex)); // register the reference as a loot
+                groupStats->IncItemCount(0, std::make_pair(LootEntry.mincountOrRef, LootEntry.itemIndex)); // register the reference as a loot
             }
 
-            for (uint32 loop = 0; loop < Entrie.maxcount; ++loop) // Ref multiplicator
+            for (uint32 loop = 0; loop < LootEntry.maxcount; ++loop) // Ref multiplicator
                 Referenced->Process(loot, lootOwner, rate, lsData.get());
         }
 
-        else if (
-            ObjectMgr::GetItemPrototype(Entrie.itemid) &&
-            ObjectMgr::GetItemPrototype(Entrie.itemid)->AllowableClass != -1 &&
+        else if (ObjectMgr::GetItemPrototype(LootEntry.itemid) && ObjectMgr::GetItemPrototype(LootEntry.itemid)->AllowableClass != -1 &&
             pGroup != nullptr &&
-            !pGroup->HasClass(ObjectMgr::GetItemPrototype(Entrie.itemid)->AllowableClass))
+                 !pGroup->HasClass(ObjectMgr::GetItemPrototype(LootEntry.itemid)->AllowableClass))
         {
             continue;
         }
         else                                                // Plain entries (not a reference, not grouped)
         {
-            loot.AddItem(Entrie);                               // Chance is already checked, just add
+            loot.AddItem(LootEntry); // Chance is already checked, just add
             // only used if we want some stats
             if (groupStats)
-                groupStats->IncItemCount(0, std::make_pair(Entrie.itemid, Entrie.itemIndex));
+                groupStats->IncItemCount(0, std::make_pair(LootEntry.itemid, LootEntry.itemIndex));
         }
     }
 
