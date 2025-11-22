@@ -1360,6 +1360,16 @@ namespace MaNGOS
             WorldObject const* i_fobj;
     };
 
+    class AnyInvisibleCheck
+    {
+        public:
+        explicit AnyInvisibleCheck(WorldObject const* fobj) : i_fobj(fobj) {}
+            WorldObject const& GetFocusObject() const { return *i_fobj; }
+        bool operator()(Unit* u) { return u->GetVisibility() == VISIBILITY_GROUP_INVISIBILITY; }
+        private:
+            WorldObject const* i_fobj;
+    };
+
     // Creature checks
 
     class AnyAssistCreatureInRangeCheck
