@@ -190,9 +190,9 @@ if(WIN32 AND NOT "$ENV{BOOST_ROOT}" STREQUAL "")
   set(BOOST_LIBRARYDIR "${BOOST_LIBRARYDIR};$ENV{BOOST_ROOT}\\stage")
 endif()
 
-# Be sure to search only static lib
+# Use shared Boost libs on Linux/Ubuntu, since static boost archives are not installed by default
 add_definitions(-DBOOST_ALL_NO_LIB)
-set(Boost_USE_STATIC_LIBS ON)
+set(Boost_USE_STATIC_LIBS OFF)
 set(Boost_NO_BOOST_CMAKE ON)   # should fix build for boost 1.71
 #set(Boost_DEBUG ON)
 

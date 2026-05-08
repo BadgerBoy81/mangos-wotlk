@@ -29,6 +29,15 @@ win
 !.gitignore
 !.gitattributes
 !.travis.yml
+!.github/copilot-instructions.md
+
+#
+# Personal project files (not upstream)
+#
+PLAN.md
+KNOWLEDGE.md
+PLAYERBOTS.md
+PlayerbotUpdateAI.drawio
 
 #
 # Build generated files
