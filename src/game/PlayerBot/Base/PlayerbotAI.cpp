@@ -103,7 +103,7 @@ PlayerbotAI::PlayerbotAI(PlayerbotMgr &mgr, Player* const bot, bool debugWhisper
     // reset some pointers
     m_targetChanged = false;
     m_targetType = TARGET_NORMAL;
-    m_targetCombat = nullptr;
+    m_targetCombatGuid = ObjectGuid();
     m_targetAssist = nullptr;
     m_targetProtect = nullptr;
 
@@ -1826,9 +1826,12 @@ void PlayerbotAI::HandleBotOutgoingPacket(const WorldPacket& packet)
                         DEBUG_LOG("spell %s interrupted (%u)", spellInfo->SpellName[0], result);
                         return;
                     }
-                    case SPELL_FAILED_UNIT_NOT_INFRONT:  // 134
-                        if (m_targetCombat)
-                            m_bot->SetInFront(m_targetCombat);
+                    case SPELL_FAILED_UNIT_NOT_INFRONT: // 134
+                    {
+                        Unit* target = GetCurrentTarget();
+                        if (target)
+                            m_bot->SetInFront(target);
+                    }
                     case SPELL_FAILED_BAD_TARGETS:  // 12
                     {
                         // DEBUG_LOG("[%s]bad target / not in front(%u) for spellId (%u) & m_CurrentlyCastingSpellId (%u)",m_bot->GetName(),result,spellId,m_CurrentlyCastingSpellId);
@@ -3127,20 +3130,40 @@ void PlayerbotAI::Attack(Unit* forcedTarget)
         // m_lootCurrent = ObjectGuid(); This was clearing loot target, causing bots to leave corpses unlooted if interupted by combat. Needs testing.
         // using this caused bot to remove current loot target, and add this new threat to the loot list.  Now it remembers the loot target and adds a new one.
         // Bot will still clear the target if the master gets too far away from it.
-        m_targetCombat = nullptr;
+        m_targetCombatGuid = ObjectGuid();
         m_DelayAttackInit = CurrentTime(); // Combat started, new start time to check CombatDelay for.
     }
 
-    GetCombatTarget(forcedTarget);
+    GetCombatTarget(forcedTarget); //crash step 4
 
-    if (!m_targetCombat)
+    Unit* target = GetCurrentTarget();
+    if (!target)
         return;
 
-    m_bot->Attack(m_targetCombat, true);
+    m_bot->Attack(target, true);
 
     // add thingToAttack to loot list to loot after combat
     if (HasCollectFlag(COLLECT_FLAG_COMBAT))
-        m_lootTargets.push_back(m_targetCombat->GetObjectGuid());
+        m_lootTargets.push_back(target->GetObjectGuid());
+}
+
+Unit* PlayerbotAI::GetCurrentTarget()
+{
+    if (!m_targetCombatGuid)
+        return nullptr;
+
+    Unit* target = ObjectAccessor::GetUnit(*m_bot, m_targetCombatGuid);
+
+    // Validate the target is still valid
+    if (!target || !target->IsInWorld() || target->IsDead() || !m_bot->IsInMap(target))
+    {
+        m_targetCombatGuid = ObjectGuid(); // Clear invalid target
+        m_targetChanged = true;
+        m_targetType = TARGET_NORMAL;
+        return nullptr;
+    }
+
+    return target;
 }
 
 // intelligently sets a reasonable combat order for this bot
@@ -3158,7 +3181,8 @@ void PlayerbotAI::GetCombatTarget(Unit* forcedTarget)
     if (!forcedTarget && (m_combatOrder & ORDERS_PROTECT) && m_targetProtect)
     {
         candidateTarget = FindAttacker((ATTACKERINFOTYPE)(AIT_VICTIMNOTSELF | AIT_HIGHESTTHREAT), m_targetProtect);
-        if (candidateTarget && candidateTarget != m_targetCombat && !IsNeutralized(candidateTarget))
+        Unit* target = GetCurrentTarget();
+        if (candidateTarget && candidateTarget != target && !IsNeutralized(candidateTarget))
         {
             forcedTarget = candidateTarget;
             m_targetType = TARGET_THREATEN;
@@ -3170,32 +3194,34 @@ void PlayerbotAI::GetCombatTarget(Unit* forcedTarget)
     // are we forced on a target?
     if (forcedTarget)
     {
+        Unit* target = GetCurrentTarget();
         // forced to change target to current target == null operation
-        if (forcedTarget && forcedTarget == m_targetCombat)
+        if (forcedTarget && forcedTarget == target)
             return;
 
         if (m_mgr.m_confDebugWhisper)
             TellMaster("Changing target to %s by force!", forcedTarget->GetName());
-        m_targetCombat = forcedTarget;
+        m_targetCombatGuid = forcedTarget ? forcedTarget->GetObjectGuid() : ObjectGuid();
         m_ignoreNeutralizeEffect = true;    // Bypass IsNeutralized() checks on next updates
         m_targetChanged = true;
         m_targetType = (m_combatOrder & (ORDERS_TANK | ORDERS_MAIN_TANK) ? TARGET_THREATEN : TARGET_NORMAL);
     }
 
     // we already have a target and we are not forced to change it
-    if (m_targetCombat)
+    Unit* target = GetCurrentTarget();
+    if (target)
     {
         // We have a target but it is neutralised and we are not forced to attack it: clear it for now
-        if ((IsNeutralized(m_targetCombat) && !m_ignoreNeutralizeEffect))
+        if ((IsNeutralized(target) && !m_ignoreNeutralizeEffect)) //crash step 5
         {
-            m_targetCombat = nullptr;
+            m_targetCombatGuid = ObjectGuid();
             m_targetType = TARGET_NORMAL;
             m_targetChanged = true;
             return;
         }
         else
         {
-            if (!IsNeutralized(m_targetCombat) && m_ignoreNeutralizeEffect)
+            if (!IsNeutralized(target) && m_ignoreNeutralizeEffect)
                 m_ignoreNeutralizeEffect = false;                           // target is no longer neutralised, clear ignore order
             return;                                                         // keep on attacking target
         }
@@ -3203,31 +3229,35 @@ void PlayerbotAI::GetCombatTarget(Unit* forcedTarget)
 
     // No target for now, try to get one
     // do we have to assist someone?
-    if (!m_targetCombat && (m_combatOrder & ORDERS_ASSIST) && m_targetAssist)
+    target = GetCurrentTarget();
+    if (!target && (m_combatOrder & ORDERS_ASSIST) && m_targetAssist)
     {
         candidateTarget = FindAttacker((ATTACKERINFOTYPE)(AIT_VICTIMNOTSELF | AIT_LOWESTTHREAT), m_targetAssist);
         if (candidateTarget && !IsNeutralized(candidateTarget))
         {
-            m_targetCombat = candidateTarget;
+            m_targetCombatGuid = candidateTarget->GetObjectGuid();
             if (m_mgr.m_confDebugWhisper)
-                TellMaster("Attacking %s to assist %s", m_targetCombat->GetName(), m_targetAssist->GetName());
+                TellMaster("Attacking %s to assist %s", candidateTarget->GetName(), m_targetAssist->GetName());
             m_targetType = (m_combatOrder & (ORDERS_TANK | ORDERS_MAIN_TANK) ? TARGET_THREATEN : TARGET_NORMAL);
             m_targetChanged = true;
         }
     }
+
     // are there any other attackers?
-    if (!m_targetCombat)
+    target = GetCurrentTarget();
+    if (!target)
     {
         candidateTarget = FindAttacker();
         if (candidateTarget && !IsNeutralized(candidateTarget))
         {
-            m_targetCombat = candidateTarget;
+            m_targetCombatGuid = candidateTarget->GetObjectGuid();
             m_targetType = (m_combatOrder & (ORDERS_TANK | ORDERS_MAIN_TANK) ? TARGET_THREATEN : TARGET_NORMAL);
             m_targetChanged = true;
         }
     }
     // no attacker found anyway
-    if (!m_targetCombat)
+    target = GetCurrentTarget();
+    if (!target)
     {
         m_targetType = TARGET_NORMAL;
         m_targetChanged = false;
@@ -3237,13 +3267,13 @@ void PlayerbotAI::GetCombatTarget(Unit* forcedTarget)
     // if thing to attack is in a duel, then ignore and don't call updateAI for 6 seconds
     // this method never gets called when the bot is in a duel and this code
     // prevents bot from helping
-    if (m_targetCombat->GetTypeId() == TYPEID_PLAYER && dynamic_cast<Player*>(m_targetCombat)->duel)
+    if (target->GetTypeId() == TYPEID_PLAYER && dynamic_cast<Player*>(target)->duel)
     {
         SetIgnoreUpdateTime(6);
         return;
     }
 
-    m_bot->SetSelectionGuid((m_targetCombat->GetObjectGuid()));
+    m_bot->SetSelectionGuid((target->GetObjectGuid()));
     SetIgnoreUpdateTime(1);
 
     if (m_bot->getStandState() != UNIT_STAND_STATE_STAND)
@@ -3257,11 +3287,13 @@ void PlayerbotAI::GetDuelTarget(Unit* forcedTarget)
     {
         SetState(BOTSTATE_COMBAT);
         m_targetChanged = true;
-        m_targetCombat = forcedTarget;
+        m_targetCombatGuid = forcedTarget ? forcedTarget->GetObjectGuid() : ObjectGuid();
         m_targetType = TARGET_THREATEN;
         m_combatStyle = COMBAT_MELEE;
     }
-    m_bot->Attack(m_targetCombat, true);
+    Unit* target = GetCurrentTarget();
+    if (target)
+        m_bot->Attack(target, true);
 }
 
 void PlayerbotAI::DoNextCombatManeuver()
@@ -3276,16 +3308,17 @@ void PlayerbotAI::DoNextCombatManeuver()
     if (m_ScenarioType == SCENARIO_PVP_DUEL)
         GetDuelTarget(GetMaster()); // TODO: Woah... wait... what? So not right.
     else
-        Attack();
+        Attack(); //crash step 3
 
     // clear orders if current target for attacks doesn't make sense anymore
-    if (!m_targetCombat || m_targetCombat->IsDead() || !m_targetCombat->IsInWorld() || !m_bot->CanAttack(m_targetCombat) || !m_bot->IsInMap(m_targetCombat))
+    Unit* target = GetCurrentTarget();
+    if (!target || target->IsDead() || !target->IsInWorld() || !m_bot->CanAttack(target) || !m_bot->IsInMap(target))
     {
         m_bot->AttackStop();
         m_bot->SetSelectionGuid(ObjectGuid());
         MovementReset();
         m_bot->InterruptNonMeleeSpells(true);
-        m_targetCombat = nullptr;
+        m_targetCombatGuid = ObjectGuid();
         m_targetChanged = false;
         m_targetType = TARGET_NORMAL;
         SetQuestNeedCreatures();
@@ -3303,7 +3336,8 @@ void PlayerbotAI::DoNextCombatManeuver()
     // new target -> DoFirstCombatManeuver
     if (m_targetChanged)
     {
-        switch (GetClassAI()->DoFirstCombatManeuver(m_targetCombat))
+        target = GetCurrentTarget();
+        switch (GetClassAI()->DoFirstCombatManeuver(target))
         {
             case RETURN_CONTINUE: // true needed for rogue stealth attack
                 break;
@@ -3324,7 +3358,8 @@ void PlayerbotAI::DoNextCombatManeuver()
     if (!m_targetChanged)
     {
         // if m_targetChanged = false
-        switch (GetClassAI()->DoNextCombatManeuver(m_targetCombat))
+        target = GetCurrentTarget();
+        switch (GetClassAI()->DoNextCombatManeuver(target))
         {
             case RETURN_NO_ACTION_UNKNOWN:
             case RETURN_NO_ACTION_OK:
@@ -3338,9 +3373,11 @@ void PlayerbotAI::DoNextCombatManeuver()
 
 void PlayerbotAI::DoCombatMovement()
 {
-    if (!m_targetCombat) return;
+    Unit* target = GetCurrentTarget();
+    if (!target)
+        return;
 
-    bool meleeReach = m_bot->CanReachWithMeleeAttack(m_targetCombat);
+    bool meleeReach = m_bot->CanReachWithMeleeAttack(target);
 
     if (m_combatStyle == COMBAT_MELEE
             && !m_bot->hasUnitState(UNIT_STAT_CHASE)
@@ -3349,17 +3386,17 @@ void PlayerbotAI::DoCombatMovement()
     {
         // melee combat - chase target if in range or if we are not forced to stay
         m_bot->GetMotionMaster()->Clear(false);
-        m_bot->GetMotionMaster()->MoveChase(m_targetCombat);
+        m_bot->GetMotionMaster()->MoveChase(target);
     }
     else if (m_combatStyle == COMBAT_RANGED
              && m_movementOrder != MOVEMENT_STAY
              && GetClassAI()->GetWaitUntil() == 0)  // Not waiting
     {
         // ranged combat - just move within spell range if bot does not have heal orders
-        if (!CanReachWithSpellAttack(m_targetCombat) && !IsHealer())
+        if (!CanReachWithSpellAttack(target) && !IsHealer())
         {
             m_bot->GetMotionMaster()->Clear(false);
-            m_bot->GetMotionMaster()->MoveChase(m_targetCombat);
+            m_bot->GetMotionMaster()->MoveChase(target);
         }
         else
             MovementClear();
@@ -5159,7 +5196,8 @@ void PlayerbotAI::UpdateAI(const uint32 /*p_time*/)
     }
 
     // handle combat (either self/master/group in combat, or combat state and valid target)
-    if (IsInCombat() || (m_botState == BOTSTATE_COMBAT && m_targetCombat) ||  m_ScenarioType == SCENARIO_PVP_DUEL)
+    Unit* target = GetCurrentTarget();
+    if (IsInCombat() || (m_botState == BOTSTATE_COMBAT && target) || m_ScenarioType == SCENARIO_PVP_DUEL)
     {
         //check if the bot is Mounted
         if (!m_bot->IsMounted())
@@ -5170,7 +5208,7 @@ void PlayerbotAI::UpdateAI(const uint32 /*p_time*/)
                 if (m_DelayAttackInit + m_DelayAttack > CurrentTime())
                     return SetIgnoreUpdateTime(1); // short bursts of delay
 
-                return DoNextCombatManeuver();
+                return DoNextCombatManeuver(); //crash step 2
             }
             else // channelling a spell
                 return SetIgnoreUpdateTime(0);  // It's better to update AI more frequently during combat
@@ -7699,7 +7737,7 @@ bool PlayerbotAI::IsNeutralized(Unit* target)
 
     for (auto aura : aurasIds)
     {
-        if (target->HasAura(aura, EFFECT_INDEX_0))
+        if (target->HasAura(aura, EFFECT_INDEX_0)) //crash step 6
             return true;
     }
 
@@ -8054,10 +8092,11 @@ bool PlayerbotAI::TradeCopper(uint32 copper)
 
 bool PlayerbotAI::DoTeleport(WorldObject& /*obj*/)
 {
-    if (m_targetCombat)
+    Unit* target = GetCurrentTarget();
+    if (target)
     {
         m_attackerInfo.clear();
-        m_targetCombat = nullptr;
+        m_targetCombatGuid = ObjectGuid();
     }
 
     SetIgnoreUpdateTime(6);
@@ -9447,7 +9486,7 @@ void PlayerbotAI::_HandleCommandReset(std::string& text, Player& fromPlayer)
     UpdateAttackerInfo();
     m_lootTargets.clear();
     m_lootCurrent = ObjectGuid();
-    m_targetCombat = nullptr;
+    m_targetCombatGuid = ObjectGuid();
     ClearActiveTalentSpec();
 }
 

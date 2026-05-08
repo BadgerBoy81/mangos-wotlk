@@ -1731,7 +1731,7 @@ class PlayerbotAI
             TARGET_ICON_MOON      // Lowest priority
         };
 
-    public:
+
         PlayerbotAI(PlayerbotMgr& mgr, Player* const bot, bool debugWhisper);
         virtual ~PlayerbotAI();
 
@@ -1927,7 +1927,7 @@ class PlayerbotAI
         void Attack(Unit* forcedTarget = nullptr);
         void GetCombatTarget(Unit* forcedTarget = 0);
         void GetDuelTarget(Unit* forcedTarget);
-        Unit* GetCurrentTarget() { return m_targetCombat; };
+        Unit* GetCurrentTarget();
         void DoNextCombatManeuver();
         void DoCombatMovement();
         void SetIgnoreUpdateTime(uint8 t = 0) { m_ignoreAIUpdatesUntilTime = time(nullptr) + t; };
@@ -2156,7 +2156,7 @@ class PlayerbotAI
         bool m_targetChanged;
         CombatTargetType m_targetType;
 
-        Unit* m_targetCombat;       // current combat target
+        ObjectGuid m_targetCombatGuid; // Changed from Unit* m_targetCombat
         Unit* m_targetAssist;       // get new target by checking attacker list of assisted player
         Unit* m_targetProtect;      // check
 
