@@ -1,0 +1,240 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36" version="28.1.2">
+  <diagram name="Page-1" id="4elFXr_4PHZJV1TlNcem">
+    <mxGraphModel dx="2253" dy="751" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="2000" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <object label="Main Update Loop" id="GLXsDWQ5UmBelMvJErrM-1">
+          <mxCell style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" vertex="1" parent="1">
+            <mxGeometry x="-290" y="285" width="30" height="60" as="geometry" />
+          </mxCell>
+        </object>
+        <mxCell id="GLXsDWQ5UmBelMvJErrM-5" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="GLXsDWQ5UmBelMvJErrM-1" target="GLXsDWQ5UmBelMvJErrM-10">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="-220" y="250" as="sourcePoint" />
+            <mxPoint x="-30" y="315" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="GLXsDWQ5UmBelMvJErrM-8" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="GLXsDWQ5UmBelMvJErrM-6" target="GLXsDWQ5UmBelMvJErrM-7">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="870" y="280" />
+              <mxPoint x="870" y="280" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="GLXsDWQ5UmBelMvJErrM-9" value="Opcode" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="GLXsDWQ5UmBelMvJErrM-8">
+          <mxGeometry x="-0.08" y="1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="GLXsDWQ5UmBelMvJErrM-6" value="&lt;div&gt;Game client&lt;/div&gt;" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" vertex="1" parent="1">
+          <mxGeometry x="1010" y="250" width="30" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="GLXsDWQ5UmBelMvJErrM-7" value="Opcode Handler" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="840" y="40" width="120" height="550" as="geometry" />
+        </mxCell>
+        <mxCell id="GLXsDWQ5UmBelMvJErrM-10" value="PlayerbotAI::UpdateAI" style="swimlane;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="50" y="10" width="460" height="2030" as="geometry" />
+        </mxCell>
+        <mxCell id="GLXsDWQ5UmBelMvJErrM-11" value="Check ClassAI&amp;nbsp;m_WaitUntil, if less than now set to 0.&lt;br&gt;Potentially pointless since it checks now compared to set value and if the time has passed it is no different than checking with 0" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="GLXsDWQ5UmBelMvJErrM-10">
+          <mxGeometry x="20" y="40" width="420" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="GLXsDWQ5UmBelMvJErrM-12" value="check if it is time to update" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="GLXsDWQ5UmBelMvJErrM-10">
+          <mxGeometry x="20" y="140" width="420" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="GLXsDWQ5UmBelMvJErrM-13" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="GLXsDWQ5UmBelMvJErrM-10" source="GLXsDWQ5UmBelMvJErrM-11" target="GLXsDWQ5UmBelMvJErrM-12">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="340" y="400" as="sourcePoint" />
+            <mxPoint x="390" y="350" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="GLXsDWQ5UmBelMvJErrM-21" value="Set next update to be in 2s" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="GLXsDWQ5UmBelMvJErrM-10">
+          <mxGeometry x="30" y="220" width="400" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="GLXsDWQ5UmBelMvJErrM-20" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="GLXsDWQ5UmBelMvJErrM-10" source="GLXsDWQ5UmBelMvJErrM-12" target="GLXsDWQ5UmBelMvJErrM-21">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="230" y="200" as="sourcePoint" />
+            <mxPoint x="390" y="250" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="GLXsDWQ5UmBelMvJErrM-22" value="Yes" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="GLXsDWQ5UmBelMvJErrM-20">
+          <mxGeometry y="1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="GLXsDWQ5UmBelMvJErrM-27" value="m_botState == BOTSTATE_LOADING" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="GLXsDWQ5UmBelMvJErrM-10">
+          <mxGeometry x="30" y="290" width="400" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="GLXsDWQ5UmBelMvJErrM-28" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="GLXsDWQ5UmBelMvJErrM-10" source="GLXsDWQ5UmBelMvJErrM-21" target="GLXsDWQ5UmBelMvJErrM-27">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="340" y="310" as="sourcePoint" />
+            <mxPoint x="390" y="260" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="GLXsDWQ5UmBelMvJErrM-29" value="m_bot-&amp;gt;IsBeingTeleported()" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="GLXsDWQ5UmBelMvJErrM-10">
+          <mxGeometry x="270" y="400" width="160" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="GLXsDWQ5UmBelMvJErrM-32" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="GLXsDWQ5UmBelMvJErrM-10" source="GLXsDWQ5UmBelMvJErrM-27" target="GLXsDWQ5UmBelMvJErrM-29">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="340" y="510" as="sourcePoint" />
+            <mxPoint x="350" y="390" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="350" y="370" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="GLXsDWQ5UmBelMvJErrM-33" value="Yes" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="GLXsDWQ5UmBelMvJErrM-32">
+          <mxGeometry x="-0.0257" y="2" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="GLXsDWQ5UmBelMvJErrM-35" value="Is within distance of follow target" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="GLXsDWQ5UmBelMvJErrM-10">
+          <mxGeometry x="270" y="500" width="160" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="GLXsDWQ5UmBelMvJErrM-36" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="GLXsDWQ5UmBelMvJErrM-10" source="GLXsDWQ5UmBelMvJErrM-29" target="GLXsDWQ5UmBelMvJErrM-35">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="340" y="610" as="sourcePoint" />
+            <mxPoint x="390" y="560" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="GLXsDWQ5UmBelMvJErrM-37" value="No" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="GLXsDWQ5UmBelMvJErrM-36">
+          <mxGeometry x="0.05" y="-2" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="GLXsDWQ5UmBelMvJErrM-45" value="Teleport&lt;br&gt;set update timeout to 6s&lt;br&gt;if m_combatTarget&lt;br&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; m_attackerInfo.clear();&lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; m_targetCombat = nullptr;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="GLXsDWQ5UmBelMvJErrM-10">
+          <mxGeometry x="280" y="660" width="170" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="GLXsDWQ5UmBelMvJErrM-46" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="GLXsDWQ5UmBelMvJErrM-10" source="GLXsDWQ5UmBelMvJErrM-35" target="GLXsDWQ5UmBelMvJErrM-45">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="340" y="610" as="sourcePoint" />
+            <mxPoint x="390" y="560" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="410" y="620" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="GLXsDWQ5UmBelMvJErrM-47" value="No" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="GLXsDWQ5UmBelMvJErrM-46">
+          <mxGeometry x="0.323" y="4" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="GLXsDWQ5UmBelMvJErrM-38" value="BOTSTATE_NORMAL" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="GLXsDWQ5UmBelMvJErrM-10">
+          <mxGeometry x="280" y="580" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="GLXsDWQ5UmBelMvJErrM-42" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="GLXsDWQ5UmBelMvJErrM-10" source="GLXsDWQ5UmBelMvJErrM-35" target="GLXsDWQ5UmBelMvJErrM-38">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="340" y="610" as="sourcePoint" />
+            <mxPoint x="540" y="580" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="GLXsDWQ5UmBelMvJErrM-43" value="Yes" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="GLXsDWQ5UmBelMvJErrM-42">
+          <mxGeometry x="-0.0387" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="GLXsDWQ5UmBelMvJErrM-49" value="m_bot-&amp;gt;IsBeingTeleported() || m_bot-&amp;gt;GetTrader()" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="GLXsDWQ5UmBelMvJErrM-10">
+          <mxGeometry x="30" y="770" width="420" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="GLXsDWQ5UmBelMvJErrM-50" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="GLXsDWQ5UmBelMvJErrM-10" source="GLXsDWQ5UmBelMvJErrM-27">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="240" y="540" as="sourcePoint" />
+            <mxPoint x="230" y="770" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="GLXsDWQ5UmBelMvJErrM-51" value="No" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="GLXsDWQ5UmBelMvJErrM-50">
+          <mxGeometry x="-0.1716" y="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="GLXsDWQ5UmBelMvJErrM-54" value="m_FollowAutoGo == FOLLOWAUTOGO_INIT" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="GLXsDWQ5UmBelMvJErrM-10">
+          <mxGeometry x="40" y="820" width="400" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="GLXsDWQ5UmBelMvJErrM-55" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="GLXsDWQ5UmBelMvJErrM-10" source="GLXsDWQ5UmBelMvJErrM-49" target="GLXsDWQ5UmBelMvJErrM-54">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="340" y="890" as="sourcePoint" />
+            <mxPoint x="390" y="840" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="GLXsDWQ5UmBelMvJErrM-57" value="&lt;div&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;&amp;nbsp; &amp;nbsp; m_movementOrder = MOVEMENT_FOLLOW;&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; m_followTarget = Master;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="GLXsDWQ5UmBelMvJErrM-10">
+          <mxGeometry x="120" y="870" width="305" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="GLXsDWQ5UmBelMvJErrM-56" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="GLXsDWQ5UmBelMvJErrM-10" source="GLXsDWQ5UmBelMvJErrM-54" target="GLXsDWQ5UmBelMvJErrM-57">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="340" y="890" as="sourcePoint" />
+            <mxPoint x="390" y="840" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="GLXsDWQ5UmBelMvJErrM-58" value="Yes&lt;div&gt;&lt;br&gt;&lt;/div&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="GLXsDWQ5UmBelMvJErrM-56">
+          <mxGeometry x="-0.1685" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="GLXsDWQ5UmBelMvJErrM-16" value="Exit update loop" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="650" y="410" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="GLXsDWQ5UmBelMvJErrM-25" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="GLXsDWQ5UmBelMvJErrM-12" target="GLXsDWQ5UmBelMvJErrM-16">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="390" y="320" as="sourcePoint" />
+            <mxPoint x="440" y="270" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="710" y="170" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="GLXsDWQ5UmBelMvJErrM-26" value="No" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="GLXsDWQ5UmBelMvJErrM-25">
+          <mxGeometry x="0.0414" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="GLXsDWQ5UmBelMvJErrM-30" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="GLXsDWQ5UmBelMvJErrM-29" target="GLXsDWQ5UmBelMvJErrM-16">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="390" y="520" as="sourcePoint" />
+            <mxPoint x="440" y="470" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="GLXsDWQ5UmBelMvJErrM-31" value="Yes" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="GLXsDWQ5UmBelMvJErrM-30">
+          <mxGeometry x="0.2706" y="1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="GLXsDWQ5UmBelMvJErrM-44" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="GLXsDWQ5UmBelMvJErrM-38" target="GLXsDWQ5UmBelMvJErrM-16">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="390" y="620" as="sourcePoint" />
+            <mxPoint x="440" y="570" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="GLXsDWQ5UmBelMvJErrM-48" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="GLXsDWQ5UmBelMvJErrM-45" target="GLXsDWQ5UmBelMvJErrM-16">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="390" y="620" as="sourcePoint" />
+            <mxPoint x="440" y="570" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="GLXsDWQ5UmBelMvJErrM-52" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="GLXsDWQ5UmBelMvJErrM-49" target="GLXsDWQ5UmBelMvJErrM-16">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="670" y="680" as="sourcePoint" />
+            <mxPoint x="720" y="630" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="660" y="790" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="GLXsDWQ5UmBelMvJErrM-53" value="Yes" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="GLXsDWQ5UmBelMvJErrM-52">
+          <mxGeometry x="-0.0405" y="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="GLXsDWQ5UmBelMvJErrM-59" value="" style="shape=flexArrow;endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="GLXsDWQ5UmBelMvJErrM-54" target="GLXsDWQ5UmBelMvJErrM-60">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="590" y="880" as="sourcePoint" />
+            <mxPoint x="640" y="845" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="GLXsDWQ5UmBelMvJErrM-60" value="FOLLOWAUTOGO_INIT set when:&lt;div&gt;Setting combat order &amp;amp;&amp;amp;&amp;nbsp;m_FollowAutoGo != FOLLOWAUTOGO_OFF&lt;/div&gt;&lt;div&gt;_HandleCommandFollow -&amp;gt; arg &quot;auto&quot; &amp;amp;&amp;amp;&amp;nbsp;m_FollowAutoGo != FOLLOWAUTOGO_SET&lt;/div&gt;&lt;div&gt;MovementReset &amp;amp;&amp;amp;&amp;nbsp;DistOverRide != 0 &amp;amp;&amp;amp; m_FollowAutoGo == FOLLOWAUTOGO_RESET or&amp;nbsp;m_FollowAutoGo == FOLLOWAUTOGO_RUN&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="580" y="817" width="840" height="60" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
