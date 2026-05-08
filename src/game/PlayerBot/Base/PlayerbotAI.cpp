@@ -62,6 +62,43 @@
 #include <iomanip>
 #include <iostream>
 
+static const char* PlayerbotAI_GetStateName(PlayerbotAI::BotState state)
+{
+    switch (state)
+    {
+        case PlayerbotAI::BOTSTATE_LOADING:      return "LOADING";
+        case PlayerbotAI::BOTSTATE_NORMAL:       return "NORMAL";
+        case PlayerbotAI::BOTSTATE_COMBAT:       return "COMBAT";
+        case PlayerbotAI::BOTSTATE_DEAD:         return "DEAD";
+        case PlayerbotAI::BOTSTATE_DEADRELEASED: return "DEADRELEASED";
+        case PlayerbotAI::BOTSTATE_LOOTING:      return "LOOTING";
+        case PlayerbotAI::BOTSTATE_FLYING:       return "FLYING";
+        case PlayerbotAI::BOTSTATE_TAME:         return "TAME";
+        case PlayerbotAI::BOTSTATE_DELAYED:      return "DELAYED";
+        default:                                return "UNKNOWN";
+    }
+}
+
+static const char* PlayerbotAI_GetCombatStyleName(uint8 style)
+{
+    switch (style)
+    {
+        case PlayerbotAI::COMBAT_MELEE:  return "MELEE";
+        case PlayerbotAI::COMBAT_RANGED: return "RANGED";
+        default:                        return "UNKNOWN";
+    }
+}
+
+static const char* PlayerbotAI_GetTargetTypeName(uint8 type)
+{
+    switch (type)
+    {
+        case PlayerbotAI::TARGET_NORMAL:   return "NORMAL";
+        case PlayerbotAI::TARGET_THREATEN: return "THREATEN";
+        default:                          return "UNKNOWN";
+    }
+}
+
 // returns a float in range of..
 float rand_float(float low, float high)
 {
@@ -1460,6 +1497,8 @@ void PlayerbotAI::ReloadAI()
             m_classAI = (PlayerbotClassAI*) new PlayerbotDeathKnightAI(*GetMaster(), *m_bot, *this);
             break;
     }
+
+    DEBUG_LOG("PLAYERBOT: %s ReloadAI class=%u style=%s", m_bot->GetName(), m_bot->getClass(), PlayerbotAI_GetCombatStyleName(m_combatStyle));
 
     HERB_GATHERING      = initSpell(HERB_GATHERING_1);
     MINING              = initSpell(MINING_1);
@@ -3140,6 +3179,7 @@ void PlayerbotAI::Attack(Unit* forcedTarget)
     if (!target)
         return;
 
+    DEBUG_LOG("PLAYERBOT: %s Attack target=%s state=%s order=0x%x type=%s", m_bot->GetName(), target->GetName(), PlayerbotAI_GetStateName(m_botState), m_combatOrder, PlayerbotAI_GetTargetTypeName(m_targetType));
     m_bot->Attack(target, true);
 
     // add thingToAttack to loot list to loot after combat
@@ -3199,6 +3239,7 @@ void PlayerbotAI::GetCombatTarget(Unit* forcedTarget)
         if (forcedTarget && forcedTarget == target)
             return;
 
+        DEBUG_LOG("PLAYERBOT: %s GetCombatTarget forced target=%s protect=%s", m_bot->GetName(), forcedTarget->GetName(), m_targetProtect ? m_targetProtect->GetName() : "none");
         if (m_mgr.m_confDebugWhisper)
             TellMaster("Changing target to %s by force!", forcedTarget->GetName());
         m_targetCombatGuid = forcedTarget ? forcedTarget->GetObjectGuid() : ObjectGuid();
@@ -3214,6 +3255,7 @@ void PlayerbotAI::GetCombatTarget(Unit* forcedTarget)
         // We have a target but it is neutralised and we are not forced to attack it: clear it for now
         if ((IsNeutralized(target) && !m_ignoreNeutralizeEffect)) //crash step 5
         {
+            DEBUG_LOG("PLAYERBOT: %s GetCombatTarget cleared neutralized target=%s", m_bot->GetName(), target->GetName());
             m_targetCombatGuid = ObjectGuid();
             m_targetType = TARGET_NORMAL;
             m_targetChanged = true;
@@ -3235,6 +3277,7 @@ void PlayerbotAI::GetCombatTarget(Unit* forcedTarget)
         candidateTarget = FindAttacker((ATTACKERINFOTYPE)(AIT_VICTIMNOTSELF | AIT_LOWESTTHREAT), m_targetAssist);
         if (candidateTarget && !IsNeutralized(candidateTarget))
         {
+            DEBUG_LOG("PLAYERBOT: %s GetCombatTarget assist target=%s assistOn=%s", m_bot->GetName(), candidateTarget->GetName(), m_targetAssist->GetName());
             m_targetCombatGuid = candidateTarget->GetObjectGuid();
             if (m_mgr.m_confDebugWhisper)
                 TellMaster("Attacking %s to assist %s", candidateTarget->GetName(), m_targetAssist->GetName());
@@ -3259,6 +3302,7 @@ void PlayerbotAI::GetCombatTarget(Unit* forcedTarget)
     target = GetCurrentTarget();
     if (!target)
     {
+        DEBUG_LOG("PLAYERBOT: %s GetCombatTarget found no valid target", m_bot->GetName());
         m_targetType = TARGET_NORMAL;
         m_targetChanged = false;
         return;
@@ -3301,6 +3345,9 @@ void PlayerbotAI::DoNextCombatManeuver()
     if (!GetClassAI())
         return; // error, error...
 
+    Unit* target = GetCurrentTarget();
+    DEBUG_LOG("PLAYERBOT: %s DoNextCombatManeuver state=%s target=%s targetChanged=%u order=0x%x scenario=%u", m_bot->GetName(), PlayerbotAI_GetStateName(m_botState), target ? target->GetName() : "none", m_targetChanged, m_combatOrder, m_ScenarioType);
+
     if (m_combatOrder == ORDERS_PASSIVE)
         return;
 
@@ -3311,9 +3358,10 @@ void PlayerbotAI::DoNextCombatManeuver()
         Attack(); //crash step 3
 
     // clear orders if current target for attacks doesn't make sense anymore
-    Unit* target = GetCurrentTarget();
+    target = GetCurrentTarget();
     if (!target || target->IsDead() || !target->IsInWorld() || !m_bot->CanAttack(target) || !m_bot->IsInMap(target))
     {
+        DEBUG_LOG("PLAYERBOT: %s DoNextCombatManeuver clearing invalid target", m_bot->GetName());
         m_bot->AttackStop();
         m_bot->SetSelectionGuid(ObjectGuid());
         MovementReset();
@@ -3378,12 +3426,14 @@ void PlayerbotAI::DoCombatMovement()
         return;
 
     bool meleeReach = m_bot->CanReachWithMeleeAttack(target);
+DEBUG_LOG("PLAYERBOT: %s DoCombatMovement target=%s meleeReach=%u style=%s movement=%u wait=%lu", m_bot->GetName(), target->GetName(), meleeReach, PlayerbotAI_GetCombatStyleName(m_combatStyle), m_movementOrder, static_cast<unsigned long>(GetClassAI()->GetWaitUntil()));
 
     if (m_combatStyle == COMBAT_MELEE
             && !m_bot->hasUnitState(UNIT_STAT_CHASE)
             && ((m_movementOrder == MOVEMENT_STAY && meleeReach) || m_movementOrder != MOVEMENT_STAY)
             && GetClassAI()->GetWaitUntil() == 0)  // Not waiting
     {
+        DEBUG_LOG("PLAYERBOT: %s DoCombatMovement melee chase", m_bot->GetName());
         // melee combat - chase target if in range or if we are not forced to stay
         m_bot->GetMotionMaster()->Clear(false);
         m_bot->GetMotionMaster()->MoveChase(target);
@@ -3395,11 +3445,15 @@ void PlayerbotAI::DoCombatMovement()
         // ranged combat - just move within spell range if bot does not have heal orders
         if (!CanReachWithSpellAttack(target) && !IsHealer())
         {
+            DEBUG_LOG("PLAYERBOT: %s DoCombatMovement ranged chase", m_bot->GetName());
             m_bot->GetMotionMaster()->Clear(false);
             m_bot->GetMotionMaster()->MoveChase(target);
         }
         else
+        {
+            DEBUG_LOG("PLAYERBOT: %s DoCombatMovement ranged hold", m_bot->GetName());
             MovementClear();
+        }
     }
 }
 
@@ -3799,7 +3853,7 @@ void PlayerbotAI::SetQuestNeedItems()
 
 void PlayerbotAI::SetState(BotState state)
 {
-    // DEBUG_LOG ("[PlayerbotAI]: SetState - %s switch state %d to %d", m_bot->GetName(), m_botState, state );
+    DEBUG_LOG("PLAYERBOT: %s SetState %s -> %s", m_bot->GetName(), PlayerbotAI_GetStateName(m_botState), PlayerbotAI_GetStateName(state));
     m_botState = state;
 }
 
@@ -3847,7 +3901,7 @@ void PlayerbotAI::DoLoot()
     // clear BOTSTATE_LOOTING if no more loot targets
     if (m_lootCurrent.IsEmpty() && m_lootTargets.empty())
     {
-        // DEBUG_LOG ("[PlayerbotAI]: DoLoot - %s is going back to idle", m_bot->GetName());
+        DEBUG_LOG("PLAYERBOT: %s DoLoot complete, returning to NORMAL", m_bot->GetName());
         SetState(BOTSTATE_NORMAL);
         m_bot->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_LOOTING);
         m_inventory_full = false;
@@ -3860,6 +3914,7 @@ void PlayerbotAI::DoLoot()
     {
         m_lootCurrent = m_lootTargets.front();
         m_lootTargets.pop_front();
+        DEBUG_LOG("PLAYERBOT: %s DoLoot next loot guid=%s", m_bot->GetName(), m_lootCurrent.GetString().c_str());
     }
 
     WorldObject* wo = m_bot->GetMap()->GetWorldObject(m_lootCurrent);

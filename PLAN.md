@@ -12,8 +12,8 @@ The server is built and running on Linux. Database is on a separate LAN machine 
 
 ## Current Status
 
-**Active phase:** Phase 1 — Developer Experience Setup
-**Last session:** 2026-05-07 — Debugging launch path and source mapping validated
+**Active phase:** Phase 2 — Logging and high-level PlayerBot understanding
+**Last session:** 2026-05-08 — Started PlayerBot logging instrumentation in `PlayerbotAI.cpp`
 
 ---
 
