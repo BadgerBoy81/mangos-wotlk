@@ -101,3 +101,6 @@ cmake_install.cmake
 # recastnavigation directory needs exception
 !dep/recastnavigation/RecastDemo/Build/
 /_build/
+
+## compile commands
+compile_commands.json
