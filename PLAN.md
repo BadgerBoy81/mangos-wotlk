@@ -12,8 +12,8 @@ The server is built and running on Linux. Database is on a separate LAN machine 
 
 ## Current Status
 
-**Active phase:** Phase 2 — Logging and high-level PlayerBot understanding
-**Last session:** 2026-05-08 — Started PlayerBot logging instrumentation in `PlayerbotAI.cpp`
+**Active phase:** Phase 3 — Deep Dive into Deprecated PlayerBot
+**Last session:** 2026-05-10 — Completed deep mapping of the deprecated PlayerBot system, including update loop, command routing, combat flow, login/session flow, and class AI behavior.
 
 ---
 
@@ -93,8 +93,8 @@ The server is built and running on Linux. Database is on a separate LAN machine 
   6. ScriptDev2 (boss scripts)
   7. Database & DBCs
 
-- [ ] **2.2 Trace how PlayerBot hooks into the world loop**
-  - `World::Update()` → `WorldSession::Update()` → `PlayerbotMgr::UpdateAI()` → `PlayerbotAI::UpdateAI()`
+- [x] **2.2 Trace how PlayerBot hooks into the world loop**
+  - `World::Update()` → `Map::Update()` → `Player::Update()` → `PlayerbotAI::UpdateAI()`
 
 - [ ] **2.3 Study how boss encounters work**
   - ScriptDevAI pattern: `CreatureAI` subclass, `UpdateAI()`, spell timers, phases
@@ -115,30 +115,30 @@ The server is built and running on Linux. Database is on a separate LAN machine 
 
 ### Steps
 
-- [ ] **3.1 Map full class hierarchy**
+- [x] **3.1 Map full class hierarchy**
   - `PlayerbotMgr` → `PlayerbotAI` → `PlayerbotClassAI` → 10 class AIs
 
-- [ ] **3.2 Trace UpdateAI flow in detail**
+- [x] **3.2 Trace UpdateAI flow in detail**
   - State machine: LOADING → NORMAL → COMBAT → DEAD → LOOTING → etc.
   - Per-state behavior, combat orders, class AI delegation
 
-- [ ] **3.3 Map communication system**
+- [x] **3.3 Map communication system**
   - Chat commands → `PlayerbotMgr` → bots
   - `HandleBotOutgoingPacket` — how world events reach bots
 
-- [ ] **3.4 Map combat system**
+- [x] **3.4 Map combat system**
   - Combat orders (TANK/HEAL/ASSIST/PROTECT), threat management
   - Spell selection per class, group coordination
 
-- [ ] **3.5 Document pain points and refactoring targets**
+- [x] **3.5 Document pain points and refactoring targets**
   - Code smells, hardcoded values, unclear flow
   - Note specific file/line references
 
 ### Done when
 
-- [ ] Can draw full bot lifecycle (load → idle → combat → loot → idle)
-- [ ] Can trace "healer casts heal on tank taking damage" through the code
-- [ ] Pain points documented with file/line references
+- [x] Can draw full bot lifecycle (load → idle → combat → loot → idle)
+- [x] Can trace "healer casts heal on tank taking damage" through the code
+- [x] Pain points documented with file/line references
 - [ ] `PlayerbotUpdateAI.drawio` updated with accurate flow
 
 ---
@@ -216,3 +216,5 @@ The server is built and running on Linux. Database is on a separate LAN machine 
 | 2026-05-04 | Migrated from Bazzite to Linux Mint. Verified `Run_linux/bin/mangosd` exists. Identified missing runtime library `libmariadb3` and updated docs for Mint package names. |
 | 2026-05-08 | Validated VS Code workflow: `clangd` IntelliSense, `CMake Tools` configure/build, and `CodeLLDB` breakpoint debugging all working. |
 | 2026-05-06 | Generated `compile_commands.json`, created `.vscode/tasks.json` and `.vscode/launch.json`, and linked compile commands into the workspace. |
+| 2026-05-10 | Completed PlayerBot knowledge mapping through `PlayerbotAI::UpdateAI()`, bot login/command flow, combat/loot state transitions, and class AI behavior. |
+| 2026-05-10 | Mapped `PlayerbotAI` update flow, state machine behavior, combat/loot loops, and class-specific idle/combat hooks. |
