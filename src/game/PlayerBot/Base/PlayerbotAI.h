@@ -2076,8 +2076,14 @@ class PlayerbotAI
         void _HandleCommandGM(std::string& text, Player& fromPlayer);
         std::string _HandleCommandHelpHelper(std::string sCommand, std::string sExplain, HELPERLINKABLES reqLink = HL_NONE, bool bReqLinkMultiples = false, bool bCommandShort = false);
 
-        void _HandleAIUpdateStateDead();
-        void _HandleAIUpdateStateTaming();
+        void HandleLoadingState();
+        void HandleDeadState();
+        void HandleTameState();
+        void HandleDelayedState();
+        void HandleCombatState(Spell* pSpell);
+        void HandleLootState();
+        void HandleFlyingState();
+        void HandleNormalState();
         Unit* GetPriorityMarkedTarget(Group* group);
         // ****** Closed Actions ********************************
         // These actions may only be called at special times.
