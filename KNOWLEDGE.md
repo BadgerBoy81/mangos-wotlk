@@ -77,6 +77,23 @@ For example:
 | `Run_linux/bin/` | Server binaries |
 | `Run_linux/etc/` | Runtime config files |
 
+### Client addon workspace
+
+- `wow-wotlk-addons/` is a second workspace root used for local WoW addon development and debugging.
+- The client addon folders for `PlayerbotHandler` and `AHSeller` are symlinked into the game client addon path, so changes made here take effect immediately in the client.
+- The addon code is edited in the same VS Code workspace context as the server, which makes it easier to work on bot/addon integration together.
+- The addon folders themselves are not part of the `Source/mangos-wotlk` git repo; they are separate support content with their own commit history.
+- Active addon work in this project currently focuses on:
+  - `PlayerbotHandler` — bot-related chat commands, UI integration, and runtime telemetry.
+  - `AHSeller` — auction-house helper addon used during playtesting.
+- Other addon folders in `wow-wotlk-addons/` are legacy or passive support addons and are not expected to change unless they become part of active work.
+
+### Addon workflow guidance
+
+- You can edit addon and server code in the same workspace to keep the integration context tight.
+- Use the terminal or separate git view to commit addon changes to the addon repo while keeping server changes in `Source/mangos-wotlk`.
+- Keep server-side bot code changes isolated to the CMaNGOS repo unless the addon integration requires a paired change.
+
 ---
 
 ## CMaNGOS Architecture Overview

@@ -40,8 +40,11 @@ The server is built and running on Linux. Database is on a separate LAN machine 
   - Primary root: `Source/mangos-wotlk` (C++ source, git)
   - Secondary: `Run_linux/etc` (server configs)
   - Secondary: `DB_Scripts` (SQL)
+  - Secondary: `wow-wotlk-addons/` (client addon workspace, separate from server git)
   - Living docs (PLAN.md, KNOWLEDGE.md, PLAYERBOTS.md) moved here, gitignored
   - copilot-instructions.md in `.github/`
+
+- Note: Client addon development is a convenience for debugging bot telemetry and chat command integration. The addon folders are symlinked into the game client path, so edits here take effect immediately. You can work on addons and server code in the same workspace, but commit addon changes separately in the addon repo or terminal.
 
 - [x] **1.2 Generate `compile_commands.json`** *(critical for IntelliSense)*
   - Re-run cmake with `-DCMAKE_EXPORT_COMPILE_COMMANDS=ON` in `Build_linux/`
